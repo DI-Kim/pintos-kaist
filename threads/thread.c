@@ -27,6 +27,7 @@
 /* List of processes in THREAD_READY state, that is, processes
    that are ready to run but not actually running. */
 static struct list ready_list;
+static struct list block_list;
 
 /* Idle thread. */
 static struct thread *idle_thread;
@@ -108,6 +109,7 @@ thread_init (void) {
 	/* Init the globla thread context */
 	lock_init (&tid_lock);
 	list_init (&ready_list);
+    list_init (&block_list);  // block_list 초기화 
 	list_init (&destruction_req);
 
 	/* Set up a thread structure for the running thread. */
@@ -295,7 +297,7 @@ thread_exit (void) {
 /* Yields the CPU.  The current thread is not put to sleep and
    may be scheduled again immediately at the scheduler's whim. */
 void
-thread_yield (void) {
+thread_yield (void) {   // 이 함수를 호출한 스레드는 다른 스레드에게 CPU를 양보
 	struct thread *curr = thread_current ();
 	enum intr_level old_level;
 
@@ -587,4 +589,39 @@ allocate_tid (void) {
 	lock_release (&tid_lock);
 
 	return tid;
+}
+
+bool list_less_tick(const struct list_elem *a, const struct list_elem *b, void *aux) {
+    int64_t tick_a = list_entry(a, struct thread, elem)->wakeup_ticks;
+    int64_t tick_b = list_entry(b, struct thread, elem)->wakeup_ticks;
+    return tick_a < tick_b;
+}
+
+void thread_sleep(int64_t ticks) {
+    enum intr_level old_level;
+    struct thread *current_thread = thread_current();
+
+    ASSERT(current_thread != idle_thread);
+    
+    old_level = intr_disable();
+    current_thread->wakeup_ticks = ticks;
+    // list_push_back(&block_list, &current_thread->elem);
+    list_insert_ordered(&block_list, &current_thread->elem, list_less_tick, NULL);
+    thread_block();
+    intr_set_level(old_level);
+}
+
+void thread_wakeup(int64_t current_tick) {
+    struct list_elem *start = list_begin(&block_list);
+    while (start != list_end(&block_list)) {
+        struct thread *current_thread = list_entry(start, struct thread, elem);
+        // wakeup tick이 더 크면 아직 일어날 시간이 아니라 while문에서 나온다.
+        // 이 부분은 block_list에 thread를 tick순으로 정렬에서 넣어주어야 효과를 발휘함
+        if (current_thread->wakeup_ticks > current_tick) {  
+            break;
+        }
+        // list_remove는 삭제 thread->next를 return
+        start = list_remove(start);  // while문이 끝까지 돌 수 있게 삭제한 thread 다음 thread를 받아옴
+        thread_unblock(current_thread);
+    }
 }
