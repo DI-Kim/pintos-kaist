@@ -1,3 +1,30 @@
+// pass tests/threads/alarm-single
+// pass tests/threads/alarm-multiple
+// pass tests/threads/alarm-simultaneous
+// pass tests/threads/alarm-priority
+// pass tests/threads/alarm-zero
+// pass tests/threads/alarm-negative
+// pass tests/threads/priority-change
+// FAIL tests/threads/priority-donate-one
+// FAIL tests/threads/priority-donate-multiple
+// FAIL tests/threads/priority-donate-multiple2
+// FAIL tests/threads/priority-donate-nest
+// FAIL tests/threads/priority-donate-sema
+// FAIL tests/threads/priority-donate-lower
+// pass tests/threads/priority-fifo
+// pass tests/threads/priority-preempt
+// pass tests/threads/priority-sema
+// pass tests/threads/priority-condvar
+// FAIL tests/threads/priority-donate-chain
+// FAIL tests/threads/mlfqs/mlfqs-load-1
+// FAIL tests/threads/mlfqs/mlfqs-load-60
+// FAIL tests/threads/mlfqs/mlfqs-load-avg
+// FAIL tests/threads/mlfqs/mlfqs-recent-1
+// pass tests/threads/mlfqs/mlfqs-fair-2
+// pass tests/threads/mlfqs/mlfqs-fair-20
+// FAIL tests/threads/mlfqs/mlfqs-nice-2
+// FAIL tests/threads/mlfqs/mlfqs-nice-10
+// FAIL tests/threads/mlfqs/mlfqs-block
 #include "threads/thread.h"
 #include <debug.h>
 #include <stddef.h>
@@ -192,7 +219,7 @@ thread_create (const char *name, int priority,
 		return TID_ERROR;
 
 	/* Initialize thread. */
-	init_thread (t, name, priority);
+	init_thread (t, name, priority); // 초기는 thread blocked 상태
 	tid = t->tid = allocate_tid ();
 
 	/* Call the kernel_thread if it scheduled.
@@ -207,7 +234,8 @@ thread_create (const char *name, int priority,
 	t->tf.eflags = FLAG_IF;
 
 	/* Add to run queue. */
-	thread_unblock (t);
+	thread_unblock (t);  // thread unblock
+    thread_priority_yield();  // unblock된 thread가 가장 우선순위가 높다면 바로 실행해주기
 
 	return tid;
 }
@@ -242,7 +270,8 @@ thread_unblock (struct thread *t) {
 
 	old_level = intr_disable ();
 	ASSERT (t->status == THREAD_BLOCKED);
-	list_push_back (&ready_list, &t->elem);
+	// list_push_back (&ready_list, &t->elem);
+    list_insert_ordered(&ready_list, &t->elem, thread_compare_priority, NULL);
 	t->status = THREAD_READY;
 	intr_set_level (old_level);
 }
@@ -305,7 +334,9 @@ thread_yield (void) {   // 이 함수를 호출한 스레드는 다른 스레드
 
 	old_level = intr_disable ();
 	if (curr != idle_thread)
-		list_push_back (&ready_list, &curr->elem);
+		// list_push_back (&ready_list, &curr->elem);
+        list_insert_ordered(&ready_list, &curr->elem, thread_compare_priority, NULL);
+
 	do_schedule (THREAD_READY);
 	intr_set_level (old_level);
 }
@@ -314,6 +345,9 @@ thread_yield (void) {   // 이 함수를 호출한 스레드는 다른 스레드
 void
 thread_set_priority (int new_priority) {
 	thread_current ()->priority = new_priority;
+    // donation 실행시 sema획득 thread가 가장 앞으로 올 수 있도록 정렬
+    list_sort(&ready_list, thread_compare_priority, NULL); 
+    thread_priority_yield();
 }
 
 /* Returns the current thread's priority. */
@@ -591,7 +625,7 @@ allocate_tid (void) {
 	return tid;
 }
 
-bool list_less_tick(const struct list_elem *a, const struct list_elem *b, void *aux) {
+bool compare_less_tick(const struct list_elem *a, const struct list_elem *b, void *aux) {
     int64_t tick_a = list_entry(a, struct thread, elem)->wakeup_ticks;
     int64_t tick_b = list_entry(b, struct thread, elem)->wakeup_ticks;
     return tick_a < tick_b;
@@ -606,7 +640,7 @@ void thread_sleep(int64_t ticks) {
     old_level = intr_disable();
     current_thread->wakeup_ticks = ticks;
     // list_push_back(&block_list, &current_thread->elem);
-    list_insert_ordered(&block_list, &current_thread->elem, list_less_tick, NULL);
+    list_insert_ordered(&block_list, &current_thread->elem, compare_less_tick, NULL);
     thread_block();
     intr_set_level(old_level);
 }
@@ -624,4 +658,16 @@ void thread_wakeup(int64_t current_tick) {
         start = list_remove(start);  // while문이 끝까지 돌 수 있게 삭제한 thread 다음 thread를 받아옴
         thread_unblock(current_thread);
     }
+}
+
+bool thread_compare_priority(const struct list_elem *a, const struct list_elem *b, void *aux) {
+    const int priority_a = list_entry(a, struct thread, elem)->priority;
+    const int priority_b = list_entry(b, struct thread, elem)->priority;
+    return priority_a > priority_b;
+}
+
+void thread_priority_yield(void) {
+    // list_empty return false면 list는 존재한다.
+    if (list_empty(&ready_list) == false && thread_get_priority() < list_entry(list_front(&ready_list), struct thread, elem)->priority)
+        thread_yield();
 }

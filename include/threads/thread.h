@@ -92,6 +92,7 @@ struct thread {
 	char name[16];                      /* Name (for debugging purposes). */
 	int priority;                       /* Priority. */
     uint64_t wakeup_ticks;  // 깨우는 틱
+    // struct list donor;
 	/* Shared between thread.c and synch.c. */
 	struct list_elem elem;              /* List element. */
 
@@ -147,5 +148,8 @@ void do_iret (struct intr_frame *tf);
 // add functions
 void thread_wakeup(int64_t current_tick);
 void thread_sleep(int64_t ticks);
-bool list_less_tick(const struct list_elem *a, const struct list_elem *b, void *aux);
+bool compare_less_tick(const struct list_elem *a, const struct list_elem *b, void *aux);
+bool thread_compare_priority(const struct list_elem *a, const struct list_elem *b, void *aux);
+void thread_priority_yield(void);
+
 #endif /* threads/thread.h */
