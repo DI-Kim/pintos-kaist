@@ -232,6 +232,10 @@ thread_create (const char *name, int priority,
 	t->tf.ss = SEL_KDSEG;
 	t->tf.cs = SEL_KCSEG;
 	t->tf.eflags = FLAG_IF;
+    //! donation을 위한 추가 인자 초가화
+    t->original_priority = t->priority;
+    t->wait_on_lock = NULL;
+    list_init(&t->donation_list);
 
 	/* Add to run queue. */
 	thread_unblock (t);  // thread unblock
