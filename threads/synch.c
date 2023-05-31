@@ -197,7 +197,7 @@ lock_acquire (struct lock *lock) {
     struct thread *current_thread = thread_current();
     struct thread *lock_thread = lock->holder;
     donate_priority();
-    list_insert_ordered(&lock_thread->donation_list, &current_thread->donation_elem,
+    list_insert_ordered(&lock_thread->donation_list, &current_thread->elem,
                         thread_compare_priority, NULL);
 
 

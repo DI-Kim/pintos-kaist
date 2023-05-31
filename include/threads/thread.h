@@ -93,6 +93,9 @@ struct thread {
 	int priority;                       /* Priority. */
     uint64_t wakeup_ticks;  // 깨우는 틱
     // struct list donor;
+    int original_priority;
+    struct lock *wait_on_lock;
+    struct list donation_list;
 	/* Shared between thread.c and synch.c. */
 	struct list_elem elem;              /* List element. */
 
