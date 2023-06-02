@@ -12,6 +12,7 @@ void syscall_entry (void);
 void syscall_handler (struct intr_frame *);
 
 /* System call.
+시스템콜이 필요한 다른 모든 작업을 수행하는 코드를 추가해줘야 한다.
  *
  * Previously system call services was handled by the interrupt handler
  * (e.g. int 0x80 in linux). However, in x86-64, the manufacturer supplies

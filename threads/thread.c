@@ -1,30 +1,3 @@
-// pass tests/threads/alarm-single
-// pass tests/threads/alarm-multiple
-// pass tests/threads/alarm-simultaneous
-// pass tests/threads/alarm-priority
-// pass tests/threads/alarm-zero
-// pass tests/threads/alarm-negative
-// pass tests/threads/priority-change
-// FAIL tests/threads/priority-donate-one
-// FAIL tests/threads/priority-donate-multiple
-// FAIL tests/threads/priority-donate-multiple2
-// FAIL tests/threads/priority-donate-nest
-// FAIL tests/threads/priority-donate-sema
-// FAIL tests/threads/priority-donate-lower
-// pass tests/threads/priority-fifo
-// pass tests/threads/priority-preempt
-// pass tests/threads/priority-sema
-// pass tests/threads/priority-condvar
-// FAIL tests/threads/priority-donate-chain
-// FAIL tests/threads/mlfqs/mlfqs-load-1
-// FAIL tests/threads/mlfqs/mlfqs-load-60
-// FAIL tests/threads/mlfqs/mlfqs-load-avg
-// FAIL tests/threads/mlfqs/mlfqs-recent-1
-// pass tests/threads/mlfqs/mlfqs-fair-2
-// pass tests/threads/mlfqs/mlfqs-fair-20
-// FAIL tests/threads/mlfqs/mlfqs-nice-2
-// FAIL tests/threads/mlfqs/mlfqs-nice-10
-// FAIL tests/threads/mlfqs/mlfqs-block
 #include "threads/thread.h"
 #include <debug.h>
 #include <stddef.h>
@@ -275,7 +248,7 @@ thread_unblock (struct thread *t) {
 	old_level = intr_disable ();
 	ASSERT (t->status == THREAD_BLOCKED);
 	// list_push_back (&ready_list, &t->elem);
-    list_insert_ordered(&ready_list, &t->elem, thread_compare_priority, NULL);
+    list_insert_ordered(&ready_list, &t->elem, &thread_compare_priority, NULL);
 	t->status = THREAD_READY;
 	intr_set_level (old_level);
 }
@@ -339,7 +312,7 @@ thread_yield (void) {   // 이 함수를 호출한 스레드는 다른 스레드
 	old_level = intr_disable ();
 	if (curr != idle_thread)
 		// list_push_back (&ready_list, &curr->elem);
-        list_insert_ordered(&ready_list, &curr->elem, thread_compare_priority, NULL);
+        list_insert_ordered(&ready_list, &curr->elem, &thread_compare_priority, NULL);
 
 	do_schedule (THREAD_READY);
 	intr_set_level (old_level);
@@ -348,9 +321,12 @@ thread_yield (void) {   // 이 함수를 호출한 스레드는 다른 스레드
 /* Sets the current thread's priority to NEW_PRIORITY. */
 void
 thread_set_priority (int new_priority) {
-	thread_current ()->priority = new_priority;
+	// thread_current ()->priority = new_priority;
+    thread_current()->original_priority = new_priority;
+    refresh_priority();
+    
     // donation 실행시 sema획득 thread가 가장 앞으로 올 수 있도록 정렬
-    list_sort(&ready_list, thread_compare_priority, NULL); 
+    list_sort(&ready_list, &thread_compare_priority, NULL); 
     thread_priority_yield();
 }
 
@@ -449,6 +425,10 @@ init_thread (struct thread *t, const char *name, int priority) {
 	t->tf.rsp = (uint64_t) t + PGSIZE - sizeof (void *);
 	t->priority = priority;
 	t->magic = THREAD_MAGIC;
+
+    t->original_priority = priority;
+	t->wait_on_lock = NULL;
+	list_init(&t->donation_list);
 }
 
 /* Chooses and returns the next thread to be scheduled.  Should
@@ -644,7 +624,7 @@ void thread_sleep(int64_t ticks) {
     old_level = intr_disable();
     current_thread->wakeup_ticks = ticks;
     // list_push_back(&block_list, &current_thread->elem);
-    list_insert_ordered(&block_list, &current_thread->elem, compare_less_tick, NULL);
+    list_insert_ordered(&block_list, &current_thread->elem, &compare_less_tick, NULL);
     thread_block();
     intr_set_level(old_level);
 }

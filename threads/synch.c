@@ -67,7 +67,7 @@ sema_down (struct semaphore *sema) {
 	old_level = intr_disable ();
 	while (sema->value == 0) {
 		// list_push_back (&sema->waiters, &thread_current ()->elem);
-        list_insert_ordered(&sema->waiters, &thread_current()->elem, thread_compare_priority, NULL);
+        list_insert_ordered(&sema->waiters, &thread_current()->elem, &thread_compare_priority, NULL);
 		thread_block ();
 	}
 	sema->value--;
@@ -112,7 +112,7 @@ sema_up (struct semaphore *sema) {
 	old_level = intr_disable ();
 	if (!list_empty (&sema->waiters)) {
         // semaphore waiters list에서 우선순위가 가장 높은 순으로 정렬
-        list_sort(&sema->waiters, thread_compare_priority, NULL);
+        list_sort(&sema->waiters, &thread_compare_priority, NULL);
         // unblock함수는 insert ordered로 ready_list에 넣음
 		thread_unblock (list_entry (list_pop_front (&sema->waiters), struct thread, elem));
     }
@@ -195,15 +195,18 @@ lock_acquire (struct lock *lock) {
 	ASSERT (!lock_held_by_current_thread (lock));
 
     struct thread *current_thread = thread_current();
-    struct thread *lock_thread = lock->holder;
-    donate_priority();
-    list_insert_ordered(&lock_thread->donation_list, &current_thread->elem,
-                        thread_compare_priority, NULL);
-
+    if (lock->holder) {
+        current_thread->wait_on_lock = lock;
+        list_insert_ordered(&lock->holder->donation_list, &current_thread->donation_elem,
+                            &donate_compare_priority, NULL);
+        // list_push_back(&lock->holder->donation_list, &current_thread->donation_elem);
+        donate_priority();
+    }
 
 
 	sema_down (&lock->semaphore);
-	lock->holder = thread_current ();
+    current_thread->wait_on_lock = NULL;
+	lock->holder = current_thread;
 }
 
 /* Tries to acquires LOCK and returns true if successful or false
@@ -236,7 +239,8 @@ lock_release (struct lock *lock) {
 	ASSERT (lock != NULL);
 	ASSERT (lock_held_by_current_thread (lock));
 
-    remove_lock_donation_list(&lock);
+    remove_lock_donation_list(lock);
+    refresh_priority();
 
 	lock->holder = NULL;
 	sema_up (&lock->semaphore);
@@ -302,7 +306,7 @@ cond_wait (struct condition *cond, struct lock *lock) {
 
 	sema_init (&waiter.semaphore, 0);
 	// list_push_back (&cond->waiters, &waiter.elem);
-    list_insert_ordered(&cond->waiters, &waiter.elem, sema_compare_priority, NULL);
+    list_insert_ordered(&cond->waiters, &waiter.elem, &sema_compare_priority, NULL);
 	lock_release (lock);  // semaphore접근을 위해 lock해제
     // sema_down을 통해 해당 semaphore의 waiters list에서 기다리게 함
 	sema_down (&waiter.semaphore);
@@ -325,7 +329,7 @@ cond_signal (struct condition *cond, struct lock *lock UNUSED) {
 
 	if (!list_empty (&cond->waiters)) {
         // priority 정렬
-        list_sort(&cond->waiters, sema_compare_priority, NULL);
+        list_sort(&cond->waiters, &sema_compare_priority, NULL);
         // priority가 가장 높은 thread를 ready_list로
 		sema_up (&list_entry (list_pop_front (&cond->waiters),
 					struct semaphore_elem, elem)->semaphore);
@@ -361,30 +365,56 @@ bool sema_compare_priority(const struct list_elem *a, const struct list_elem *b,
     return a_priority > b_priority;
 }
 
+bool donate_compare_priority(const struct list_elem *a, const struct list_elem *b, void *aux) {
+    int priority_a  = list_entry(a, struct thread, donation_elem)->priority;
+    int priority_b = list_entry(b, struct thread, donation_elem)->priority;
+    return priority_a > priority_b;
+}
+
 void donate_priority() {
     struct thread *current_thread = thread_current();
+
     while (1) {
-        if (!current_thread->wait_on_lock->holder)
+    // gitbook에 나와있던 8levels를 의미하는 것이었다!
+    // for (int i = 0; i < 8; i++) {
+        // if (!current_thread->wait_on_lock->holder)
+        if (!current_thread->wait_on_lock)
             break;
 
         struct thread *lock_thread = current_thread->wait_on_lock->holder;
 
-        if (lock_thread->priority < current_thread->priority) {
-            lock_thread->priority = current_thread->priority;
-        }
-        if (current_thread->wait_on_lock->holder) 
-            current_thread = lock_thread;
+        lock_thread->priority = current_thread->priority;
+        current_thread = lock_thread;
     }
+    
 }
 
 void remove_lock_donation_list(struct lock *lock) {
     struct thread *current_thread = thread_current();
     struct list_elem *list_e = list_begin(&current_thread->donation_list);
 
-    for (list_e; list_e != list_end(&current_thread->donation_list); list_e = list_e->next) {
-        struct thread *removal_thread = list_entry(list_e, struct thread, elem);
-        if (removal_thread == lock->holder) {
-            list_remove(list_e);
-        }
+    for (list_e; list_e != list_end(&current_thread->donation_list); list_e = list_next(list_e)) {
+        // struct thread *removal_thread = list_entry(list_e, struct thread, elem);
+        struct thread *removal_thread = list_entry(list_e, struct thread, donation_elem); //! modified code
+        // if (removal_thread == lock->holder) {
+        //     list_remove(list_e);
+        // }
+       //! 오류나서 수정한 것, 코드 해석하기
+        if (removal_thread->wait_on_lock == lock) 
+            list_remove(&removal_thread->donation_elem);
+    }
+}
+
+void refresh_priority (void) {
+    struct thread *current_thread = thread_current();
+    current_thread->priority = current_thread->original_priority;
+    // donation_list이 존재하면, 우선순위를 가장 높은애로 다시 바꿔주기
+    if(!list_empty(&current_thread->donation_list)) {
+        list_sort(&current_thread->donation_list, &donate_compare_priority, NULL);
+
+        int highest_priority = list_entry(list_front(&current_thread->donation_list), struct thread, donation_elem)->priority;
+        
+        if (current_thread->priority < highest_priority)
+            current_thread->priority = highest_priority;
     }
 }
