@@ -177,14 +177,16 @@ read_command_line (void) {
 	int i;
 
 	argc = *(uint32_t *) ptov (LOADER_ARG_CNT);
-	p = ptov (LOADER_ARGS);
+	p = ptov (LOADER_ARGS);  // command line argument의 pointer address
 	end = p + LOADER_ARGS_LEN;
 	for (i = 0; i < argc; i++) {
 		if (p >= end)
 			PANIC ("command line arguments overflow");
 
 		argv[i] = p;
-		p += strnlen (p, end - p) + 1;
+        
+        //! printf("%s \n", argv[i]);
+		p += strnlen (p, end - p) + 1;  // end - p = 128, strnlen (p, end - p) = 최대 128을 초과하지 않는 길이
 	}
 	argv[argc] = NULL;
 

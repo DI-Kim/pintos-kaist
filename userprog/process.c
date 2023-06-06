@@ -49,9 +49,11 @@ process_create_initd (const char *file_name) {
 	if (fn_copy == NULL)
 		return TID_ERROR;
 	strlcpy (fn_copy, file_name, PGSIZE);
-
+//!
+    // file_name = strtok(&file_name, " ");
+//!
 	/* Create a new thread to execute FILE_NAME. */
-	tid = thread_create (file_name, PRI_DEFAULT, initd, fn_copy);
+	tid = thread_create (file_name, PRI_DEFAULT, initd, fn_copy); // 레지스터 rsi에 initd, rdi에 fn_copy 저장
 	if (tid == TID_ERROR)
 		palloc_free_page (fn_copy);
 	return tid;
@@ -121,7 +123,7 @@ __do_fork (void *aux) {
 	struct intr_frame if_;
 	struct thread *parent = (struct thread *) aux;
 	struct thread *current = thread_current ();
-	/* TODO: somehow pass the parent_if. (i.e. process_fork()'s if_) */
+	// TODO: somehow pass the parent_if. (i.e. process_fork()'s if_) 
 	struct intr_frame *parent_if;
 	bool succ = true;
 
@@ -143,11 +145,11 @@ __do_fork (void *aux) {
 		goto error;
 #endif
 
-	/* TODO: Your code goes here.
-	 * TODO: Hint) To duplicate the file object, use `file_duplicate`
-	 * TODO:       in include/filesys/file.h. Note that parent should not return
-	 * TODO:       from the fork() until this function successfully duplicates
-	 * TODO:       the resources of parent.*/
+	// TODO: Your code goes here.
+	// TODO: Hint) To duplicate the file object, use `file_duplicate`
+	// TODO:       in include/filesys/file.h. Note that parent should not return
+	// TODO:       from the fork() until this function successfully duplicates
+	// TODO:       the resources of parent.
 
 	process_init ();
 
@@ -175,10 +177,23 @@ process_exec (void *f_name) {
 
 	/* We first kill the current context */
 	process_cleanup ();
-
+//!
+    // char *argv[LOADER_ARGS_LEN]; // 128
+    // int argc = 0;
+    // char *save_ptr, *token;
+    // while (token != NULL) {
+    //     token = strtok_r(file_name, " ", &save_ptr);
+    //     argv[argc] = token;
+    //     argc += 1;
+    // }
+//!
 	/* And then load the binary */
 	success = load (file_name, &_if);
-
+    //! load가 성공적으로 끝나면 해당 프로세스를 바로 실행하도록 리턴
+//!
+    // argument_stack(argv, argc, &_if);
+    
+//!
 	/* If load failed, quit. */
 	palloc_free_page (file_name);
 	if (!success)
@@ -204,6 +219,7 @@ process_wait (tid_t child_tid UNUSED) {
 	/* XXX: Hint) The pintos exit if process_wait (initd), we recommend you
 	 * XXX:       to add infinite loop here before
 	 * XXX:       implementing the process_wait. */
+    while (1) {}
 	return -1;
 }
 
@@ -211,10 +227,10 @@ process_wait (tid_t child_tid UNUSED) {
 void
 process_exit (void) {
 	struct thread *curr = thread_current ();
-	/* TODO: Your code goes here.
-	 * TODO: Implement process termination message (see
-	 * TODO: project2/process_termination.html).
-	 * TODO: We recommend you to implement process resource cleanup here. */
+	// TODO: Your code goes here.
+	// TODO: Implement process termination message (see
+	// TODO: project2/process_termination.html).
+	// TODO: We recommend you to implement process resource cleanup here. 
 
 	process_cleanup ();
 }
@@ -320,6 +336,7 @@ static bool load_segment (struct file *file, off_t ofs, uint8_t *upage,
  * Stores the executable's entry point into *RIP
  * and its initial stack pointer into *RSP.
  * Returns true if successful, false otherwise. */
+//! 실행할 프로그램의 binary file을 메모리에 올리는 역할을 하는 함수
 static bool
 load (const char *file_name, struct intr_frame *if_) {
 	struct thread *t = thread_current ();
@@ -328,7 +345,23 @@ load (const char *file_name, struct intr_frame *if_) {
 	off_t file_ofs;
 	bool success = false;
 	int i;
-
+//!
+    printf("✅✅✅✅✅✅✅%s✅✅✅✅✅✅\n", file_name);
+    char temp[129];
+    strlcpy(temp, file_name, 30);
+    char *argv[LOADER_ARGS_LEN]; // 128
+    int argc = 0;
+    char *save_ptr, *token;
+    token = strtok_r(temp, " ", &save_ptr);
+    while (token != NULL) {
+        argv[argc] = token;
+        argc += 1;
+        token = strtok_r(NULL, " ", &save_ptr);
+    }
+    printf("✅✅✅✅✅✅✅%s✅✅✅✅✅✅\n", temp);
+//!
+    //! 각 프로세스에 해당하는 VM(virtual memory)가 만들어져야 하므로,
+    //! 이를 위한 페이지 테이블 엔트리 생성
 	/* Allocate and activate page directory. */
 	t->pml4 = pml4_create ();
 	if (t->pml4 == NULL)
@@ -336,9 +369,9 @@ load (const char *file_name, struct intr_frame *if_) {
 	process_activate (thread_current ());
 
 	/* Open executable file. */
-	file = filesys_open (file_name);
+	file = filesys_open (argv[0]);
 	if (file == NULL) {
-		printf ("load: %s: open failed\n", file_name);
+		printf ("load: %s: open failed\n", argv[0]);
 		goto done;
 	}
 
@@ -350,11 +383,12 @@ load (const char *file_name, struct intr_frame *if_) {
 			|| ehdr.e_version != 1
 			|| ehdr.e_phentsize != sizeof (struct Phdr)
 			|| ehdr.e_phnum > 1024) {
-		printf ("load: %s: error loading executable\n", file_name);
+		printf ("load: %s: error loading executable\n", argv[0]);
 		goto done;
 	}
 
 	/* Read program headers. */
+    //! ELF 파일인지 확인
 	file_ofs = ehdr.e_phoff;
 	for (i = 0; i < ehdr.e_phnum; i++) {
 		struct Phdr phdr;
@@ -378,6 +412,7 @@ load (const char *file_name, struct intr_frame *if_) {
 			case PT_INTERP:
 			case PT_SHLIB:
 				goto done;
+            //! PT_LOAD의 header타입을 가진 부분을 하나씩 메모리에 올리는 작업 (위에 for문 확인)
 			case PT_LOAD:
 				if (validate_segment (&phdr, file)) {
 					bool writable = (phdr.p_flags & PF_W) != 0;
@@ -406,17 +441,21 @@ load (const char *file_name, struct intr_frame *if_) {
 				break;
 		}
 	}
-
+    //! 전부 메모리에 올린 뒤에 스택을 만드는 과정
 	/* Set up stack. */
 	if (!setup_stack (if_))
 		goto done;
 
+    // ! entry point(어떤 명령부터 실행되는지를 가리킴) 역할의 rip를 설정
 	/* Start address. */
 	if_->rip = ehdr.e_entry;
 
-	/* TODO: Your code goes here.
-	 * TODO: Implement argument passing (see project2/argument_passing.html). */
-
+	// TODO: Your code goes here.
+	// TODO: Implement argument passing (see project2/argument_passing.html). 
+//!
+    argument_stack(argv, argc, if_);
+    hex_dump(if_->rsp , if_->rsp , USER_STACK - if_->rsp ,true);
+//!
 	success = true;
 
 done:
@@ -576,9 +615,9 @@ install_page (void *upage, void *kpage, bool writable) {
 
 static bool
 lazy_load_segment (struct page *page, void *aux) {
-	/* TODO: Load the segment from the file */
-	/* TODO: This called when the first page fault occurs on address VA. */
-	/* TODO: VA is available when calling this function. */
+	// TODO: Load the segment from the file 
+	// TODO: This called when the first page fault occurs on address VA. 
+	// TODO: VA is available when calling this function. 
 }
 
 /* Loads a segment starting at offset OFS in FILE at address
@@ -609,7 +648,7 @@ load_segment (struct file *file, off_t ofs, uint8_t *upage,
 		size_t page_read_bytes = read_bytes < PGSIZE ? read_bytes : PGSIZE;
 		size_t page_zero_bytes = PGSIZE - page_read_bytes;
 
-		/* TODO: Set up aux to pass information to the lazy_load_segment. */
+		// TODO: Set up aux to pass information to the lazy_load_segment.
 		void *aux = NULL;
 		if (!vm_alloc_page_with_initializer (VM_ANON, upage,
 					writable, lazy_load_segment, aux))
@@ -629,11 +668,45 @@ setup_stack (struct intr_frame *if_) {
 	bool success = false;
 	void *stack_bottom = (void *) (((uint8_t *) USER_STACK) - PGSIZE);
 
-	/* TODO: Map the stack on stack_bottom and claim the page immediately.
-	 * TODO: If success, set the rsp accordingly.
-	 * TODO: You should mark the page is stack. */
-	/* TODO: Your code goes here */
+	// TODO: Map the stack on stack_bottom and claim the page immediately.
+	// TODO: If success, set the rsp accordingly.
+	// TODO: You should mark the page is stack. 
+	// TODO: Your code goes here 
 
 	return success;
 }
 #endif /* VM */
+
+//! add function
+
+void argument_stack(char **argv, int argc, struct intr_frame *_if){
+	char *arg_address[128];
+
+	// 1. Save argument strings (character by character)
+	// 맨 처음 if_->rsp = 0x47480000(USER_STACK)
+	for (int i = argc - 1; i >= 0; i--)  // 가장 idx가 큰 argv부터 쌓는다.
+	{
+		int argv_len = strlen(argv[i]);  // argv[1] = "onearg", argv_len = 6
+		_if->rsp -= (argv_len + 1);
+		memcpy(_if->rsp, argv[i], argv_len + 1);
+		arg_address[i] = _if->rsp;
+    }
+        
+        while(_if->rsp % 8 != 0){
+            _if->rsp--;
+            *(uint8_t *)(_if->rsp) = 0;
+	    }
+
+    	size_t PTR_SIZE = sizeof(char *);  // PTR_SIZE == 8
+	for (int i = argc; i >= 0; i--)
+    {
+        _if->rsp = _if->rsp - PTR_SIZE;
+        if (i == argc)  // 맨 위에는 padding?
+            memset(_if->rsp, 0, PTR_SIZE);
+        else
+            memcpy(_if->rsp, &arg_address[i], PTR_SIZE);
+    }
+
+    _if->rsp -= PTR_SIZE;
+	memset(_if -> rsp, 0, PTR_SIZE);
+}
