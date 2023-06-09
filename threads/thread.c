@@ -205,10 +205,16 @@ thread_create (const char *name, int priority,
 	t->tf.ss = SEL_KDSEG;
 	t->tf.cs = SEL_KCSEG;
 	t->tf.eflags = FLAG_IF;
-    //! donation을 위한 추가 인자 초가화
+//! donation을 위한 추가 인자 초가화
     t->original_priority = t->priority;
     t->wait_on_lock = NULL;
     list_init(&t->donation_list);
+//! project 2
+    // sema_init(&t->exec_sema, 0);
+    t->FDtable = palloc_get_multiple(PAL_ZERO, FDT_PAGES);
+    if (t->FDtable == NULL)
+        return TID_ERROR;
+//!
 
 	/* Add to run queue. */
 	thread_unblock (t);  // thread unblock
@@ -296,6 +302,7 @@ thread_exit (void) {
 	/* Just set our status to dying and schedule another process.
 	   We will be destroyed during the call to schedule_tail(). */
 	intr_disable ();
+    // list_remove(&thread_current()->all_elem);
 	do_schedule (THREAD_DYING);
 	NOT_REACHED ();
 }
@@ -429,6 +436,10 @@ init_thread (struct thread *t, const char *name, int priority) {
     t->original_priority = priority;
 	t->wait_on_lock = NULL;
 	list_init(&t->donation_list);
+    
+//! project 2
+    t->next_fd = 2; // 0 -> stdin, 1 -> stdout
+//!
 }
 
 /* Chooses and returns the next thread to be scheduled.  Should
@@ -445,6 +456,7 @@ next_thread_to_run (void) {
 }
 
 /* Use iretq to launch the thread */
+// 인자로 들어온 인터럽트 프레임내의 정보를 CPU로 복원 (context switching시 호출)
 void
 do_iret (struct intr_frame *tf) {
 	__asm __volatile(
@@ -655,3 +667,44 @@ void thread_priority_yield(void) {
     if (list_empty(&ready_list) == false && thread_get_priority() < list_entry(list_front(&ready_list), struct thread, elem)->priority)
         thread_yield();
 }
+
+//! project 2
+// 현재 thread의 FDtable에 현재 파일을 추가한다.
+// next_fd부터 limit전까지 탐색 후 빈 인덱스에 추가
+// 성공시 next_fd, 실패시 -1 리턴
+int process_add_file(struct file *f) {
+    struct thread *curr = thread_current();
+    struct file **fdt = curr->FDtable;
+
+    for (curr->next_fd; curr->next_fd < OPEN_FILE_LIMIT; curr->next_fd++) {
+        if (!fdt[curr->next_fd]) {
+            curr->next_fd += 1;
+
+            if (curr->next_fd >= OPEN_FILE_LIMIT)
+                return -1;
+
+            fdt[curr->next_fd] = f;
+            break;
+        }
+    }
+    return curr->next_fd;
+}
+// 현재 스레드가 가진 파일을 fd(index)를 통해 받아오는 함수
+// 실패시(fd가 잘못되면) NULL 반환, 성공시 fdt[fd] 반환
+struct file *process_get_file(int fd) {
+    if (fd < 2 || fd >= OPEN_FILE_LIMIT)
+        return NULL;
+
+    struct thread *curr = thread_current();
+    struct file **fdt = curr->FDtable;
+    return fdt[fd];
+}
+void process_close_file(int fd) {
+   if (fd < 2 || fd >= OPEN_FILE_LIMIT)
+        return NULL;
+
+    struct thread *curr = thread_current();
+    struct file **fdt = curr->FDtable;
+    fdt[fd] == NULL;
+}
+//!

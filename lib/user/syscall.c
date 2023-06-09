@@ -2,7 +2,7 @@
 #include <stdint.h>
 #include "../syscall-nr.h"
 
-__attribute__((always_inline))
+__attribute__((always_inline)) // 강제로 인라인 함수(함수 호출에 의한 오버헤드가 없는 함수)로 만듦
 static __inline int64_t syscall (uint64_t num_, uint64_t a1_, uint64_t a2_,
 		uint64_t a3_, uint64_t a4_, uint64_t a5_, uint64_t a6_) {
 	int64_t ret;
@@ -15,9 +15,9 @@ static __inline int64_t syscall (uint64_t num_, uint64_t a1_, uint64_t a2_,
 	register uint64_t *a6 asm ("r9") = (uint64_t *) a6_;
 
 	__asm __volatile(
-			"mov %1, %%rax\n"
-			"mov %2, %%rdi\n"
-			"mov %3, %%rsi\n"
+			"mov %1, %%rax\n" // return값
+			"mov %2, %%rdi\n" // rdi, argc
+			"mov %3, %%rsi\n" // rsi, argv[]
 			"mov %4, %%rdx\n"
 			"mov %5, %%r10\n"
 			"mov %6, %%r8\n"

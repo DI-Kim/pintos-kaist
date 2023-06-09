@@ -27,6 +27,10 @@ typedef int tid_t;
 #define PRI_MIN 0                       /* Lowest priority. */
 #define PRI_DEFAULT 31                  /* Default priority. */
 #define PRI_MAX 63                      /* Highest priority. */
+//! project 2
+#define FDT_PAGES 4  // PML4 이기 때문에 4가 아닐까? 왜 2로 했을까...
+#define OPEN_FILE_LIMIT 128  // extra: dup2 할때는 제한 x
+//!
 
 /* A kernel thread or user process.
  *
@@ -99,6 +103,12 @@ struct thread {
 	/* Shared between thread.c and synch.c. */
 	struct list_elem elem;              /* List element. */
 
+//!
+    struct file *FDtable;
+    int next_fd;  // fd의 인덱스
+    int exit_status;
+    struct list_elem all_elem;  // 모든 thread 리스트
+//!
 
 #ifdef USERPROG
 	/* Owned by userprog/process.c. */
@@ -113,6 +123,8 @@ struct thread {
 	struct intr_frame tf;               /* Information for switching */
 	unsigned magic;                     /* Detects stack overflow. */
 };
+
+
 
 /* If false (default), use round-robin scheduler.
    If true, use multi-level feedback queue scheduler.
@@ -154,5 +166,8 @@ void thread_sleep(int64_t ticks);
 bool compare_less_tick(const struct list_elem *a, const struct list_elem *b, void *aux);
 bool thread_compare_priority(const struct list_elem *a, const struct list_elem *b, void *aux);
 void thread_priority_yield(void);
-
+//! project 2
+int process_add_file(struct file *f);
+struct file *process_get_file(int fd);
+void process_close_file(int fd);
 #endif /* threads/thread.h */

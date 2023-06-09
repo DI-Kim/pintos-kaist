@@ -1,6 +1,7 @@
 {
     "files.associations": {
         "*.html": "html",
-        "stddef.h": "c"
+        "stddef.h": "c",
+        "syscall.h": "c"
     }
 }

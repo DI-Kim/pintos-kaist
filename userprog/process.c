@@ -78,8 +78,9 @@ initd (void *f_name) {
 tid_t
 process_fork (const char *name, struct intr_frame *if_ UNUSED) {
 	/* Clone current thread to new thread.*/
+    // kernel_thread에서 __do_fork(thread_current())실행
 	return thread_create (name,
-			PRI_DEFAULT, __do_fork, thread_current ());
+			PRI_DEFAULT, __do_fork, thread_current ()); 
 }
 
 #ifndef VM
@@ -192,7 +193,6 @@ process_exec (void *f_name) {
     //! load가 성공적으로 끝나면 해당 프로세스를 바로 실행하도록 리턴
 //!
     // argument_stack(argv, argc, &_if);
-    
 //!
 	/* If load failed, quit. */
 	palloc_free_page (file_name);
@@ -219,7 +219,9 @@ process_wait (tid_t child_tid UNUSED) {
 	/* XXX: Hint) The pintos exit if process_wait (initd), we recommend you
 	 * XXX:       to add infinite loop here before
 	 * XXX:       implementing the process_wait. */
-    while (1) {}
+//!
+    // while (1) {}
+//!
 	return -1;
 }
 
@@ -347,7 +349,7 @@ load (const char *file_name, struct intr_frame *if_) {
 	int i;
 //!
     printf("✅✅✅✅✅✅✅%s✅✅✅✅✅✅\n", file_name);
-    char temp[129];
+    char temp[LOADER_ARGS_LEN];
     strlcpy(temp, file_name, 30);
     char *argv[LOADER_ARGS_LEN]; // 128
     int argc = 0;
@@ -450,11 +452,14 @@ load (const char *file_name, struct intr_frame *if_) {
 	/* Start address. */
 	if_->rip = ehdr.e_entry;
 
+//!
 	// TODO: Your code goes here.
 	// TODO: Implement argument passing (see project2/argument_passing.html). 
-//!
     argument_stack(argv, argc, if_);
-    hex_dump(if_->rsp , if_->rsp , USER_STACK - if_->rsp ,true);
+    if_->R.rdi = argc;
+    if_->R.rsi = if_->rsp + 8;
+
+    hex_dump(if_->rsp, if_->rsp, USER_STACK - if_->rsp, true);
 //!
 	success = true;
 
@@ -684,22 +689,20 @@ void argument_stack(char **argv, int argc, struct intr_frame *_if){
 
 	// 1. Save argument strings (character by character)
 	// 맨 처음 if_->rsp = 0x47480000(USER_STACK)
-	for (int i = argc - 1; i >= 0; i--)  // 가장 idx가 큰 argv부터 쌓는다.
-	{
+	for (int i = argc - 1; i >= 0; i--) { // 가장 idx가 큰 argv부터 쌓는다.
 		int argv_len = strlen(argv[i]);  // argv[1] = "onearg", argv_len = 6
 		_if->rsp -= (argv_len + 1);
 		memcpy(_if->rsp, argv[i], argv_len + 1);
 		arg_address[i] = _if->rsp;
     }
         
-        while(_if->rsp % 8 != 0){
-            _if->rsp--;
-            *(uint8_t *)(_if->rsp) = 0;
-	    }
+    while(_if->rsp % 8 != 0) {
+        _if->rsp--;
+        *(uint8_t *)(_if->rsp) = 0;
+    }
 
-    	size_t PTR_SIZE = sizeof(char *);  // PTR_SIZE == 8
-	for (int i = argc; i >= 0; i--)
-    {
+    size_t PTR_SIZE = sizeof(char *);  // PTR_SIZE == 8
+	for (int i = argc; i >= 0; i--) {
         _if->rsp = _if->rsp - PTR_SIZE;
         if (i == argc)  // 맨 위에는 padding?
             memset(_if->rsp, 0, PTR_SIZE);
