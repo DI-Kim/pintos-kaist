@@ -1,0 +1,27 @@
+Kernel command line: -q -f put read-bad-fd run read-bad-fd
+0 ~ 9fc00 1
+100000 ~ 13e0000 1
+Pintos booting with: 
+	base_mem: 0x0 ~ 0x9fc00 (Usable: 639 kB)
+	ext_mem: 0x100000 ~ 0x13e0000 (Usable: 19,328 kB)
+Calibrating timer...  156,672,000 loops/s.
+hd0:0: detected 313 sector (156 kB) disk, model "QEMU HARDDISK", serial "QM00001"
+hd0:1: detected 20,160 sector (9 MB) disk, model "QEMU HARDDISK", serial "QM00002"
+hd1:0: detected 103 sector (51 kB) disk, model "QEMU HARDDISK", serial "QM00003"
+Formatting file system...done.
+Boot complete.
+Putting 'read-bad-fd' into the file system...
+Executing 'read-bad-fd':
+(read-bad-fd) begin
+Kernel PANIC at ../../filesys/inode.c:45 in byte_to_sector(): assertion `inode != NULL' failed.
+Call stack: 0x8004217d47 0x800421efd2 0x800421f448 0x800421e4e4 0x800421cefb 0x800421cb0c 0x800421c901 0x40010d 0x400219 0x400cba.
+The `backtrace' program can make call stacks useful.
+Read "Backtraces" in the "Debugging Tools" chapter
+of the Pintos documentation for more information.
+Timer: 63 ticks
+Thread: 30 idle ticks, 32 kernel ticks, 1 user ticks
+hd0:0: 0 reads, 0 writes
+hd0:1: 80 reads, 234 writes
+hd1:0: 103 reads, 0 writes
+Console: 1161 characters output
+Key
