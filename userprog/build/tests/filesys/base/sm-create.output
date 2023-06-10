@@ -15,15 +15,17 @@ Executing 'sm-create':
 (sm-create) begin
 (sm-create) create "blargle"
 (sm-create) open "blargle" for verification
-(sm-create) read of 512 bytes at offset 0 in "blargle" returned 9: FAILED
-sm-create: exit(1)
+(sm-create) verified contents of "blargle"
+(sm-create) close "blargle"
+(sm-create) end
+sm-create: exit(0)
 Execution of 'sm-create' complete.
 Timer: 125 ticks
-Thread: 30 idle ticks, 92 kernel ticks, 4 user ticks
+Thread: 30 idle ticks, 90 kernel ticks, 5 user ticks
 hd0:0: 0 reads, 0 writes
-hd0:1: 107 reads, 266 writes
+hd0:1: 119 reads, 266 writes
 hd1:0: 107 reads, 0 writes
-Console: 973 characters output
+Console: 986 characters output
 Keyboard: 0 keys pressed
 Exception: 0 page faults
 Powering off...

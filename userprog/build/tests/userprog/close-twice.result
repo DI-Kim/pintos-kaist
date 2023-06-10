@@ -1,1 +1,14 @@
-PASS
+FAIL
+Kernel panic in run: PANIC at ../../filesys/inode.c:304 in inode_allow_write(): assertion `inode->deny_write_cnt > 0' failed.
+Call stack: 0x8004217d75 0x800421fa40 0x800421e897 0x800421e644 0x800421cf76 0x800421cc87 0x800421c951 0x40019d 0x4001fb 0x400c9c
+Translation of call stack:
+0x0000008004217d75: debug_panic (lib/kernel/debug.c:32)
+0x000000800421fa40: inode_allow_write (filesys/inode.c:305)
+0x000000800421e897: file_allow_write (filesys/file.c:137)
+0x000000800421e644: file_close (filesys/file.c:56)
+0x000000800421cf76: close (userprog/syscall.c:592)
+0x000000800421cc87: syscall_handler (userprog/syscall.c:513)
+0x000000800421c951: no_sti (userprog/syscall-entry.o:?)
+0x000000000040019d: (unknown)
+0x00000000004001fb: (unknown)
+0x0000000000400c9c: (unknown)

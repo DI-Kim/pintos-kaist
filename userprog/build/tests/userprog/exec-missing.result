@@ -1,25 +1,19 @@
 FAIL
-Test output failed to match any acceptable form.
-
-Acceptable output:
-  (exec-missing) begin
-  load: no-such-file: open failed
-  exec-missing: exit(-1)
-Differences in `diff -u' format:
-  (exec-missing) begin
-- load: no-such-file: open failed
-- exec-missing: exit(-1)
-+ (exec-missing) exec("no-such-file"): 3
-+ (exec-missing) end
-+ exec-missing: exit(0)
-Acceptable output:
-  (exec-missing) begin
-  (exec-missing) exec("no-such-file"): -1
-  exec-missing: exit(-1)
-Differences in `diff -u' format:
-  (exec-missing) begin
-- (exec-missing) exec("no-such-file"): -1
-- exec-missing: exit(-1)
-+ (exec-missing) exec("no-such-file"): 3
-+ (exec-missing) end
-+ exec-missing: exit(0)
+Kernel panic in run: PANIC at ../../threads/thread.c:271 in thread_current(): assertion `is_thread(t)' failed.
+Call stack: 0x8004217d75 0x8004207041 0x800420a3ee 0x800421b07a 0x800421b247 0x800421b22b 0x8004216274 0x80042159ac 0x800421b0da 0x8004215278 0x800421baaf 0x800421b663 0x800421d248 0x800421cad5 0x800421c951
+Translation of call stack:
+0x0000008004217d75: debug_panic (lib/kernel/debug.c:32)
+0x0000008004207041: thread_current (threads/thread.c:272)
+0x000000800420a3ee: lock_held_by_current_thread (threads/synch.c:681)
+0x000000800421b07a: console_locked_by_current_thread (lib/kernel/console.c:111 (discriminator 2))
+0x000000800421b247: putchar_have_lock (lib/kernel/console.c:173)
+0x000000800421b22b: vprintf_helper (lib/kernel/console.c:166)
+0x0000008004216274: format_string (lib/stdio.c:529 (discriminator 3))
+0x00000080042159ac: __vprintf (lib/stdio.c:284)
+0x000000800421b0da: vprintf (lib/kernel/console.c:123)
+0x0000008004215278: printf (lib/stdio.c:80)
+0x000000800421baaf: load (userprog/process.c:430)
+0x000000800421b663: process_exec (userprog/process.c:189)
+0x000000800421d248: exec (userprog/syscall.c:678)
+0x000000800421cad5: syscall_handler (userprog/syscall.c:481)
+0x000000800421c951: no_sti (userprog/syscall-entry.o:?)
