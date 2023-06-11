@@ -5,7 +5,7 @@ Pintos booting with:
 	base_mem: 0x0 ~ 0x9fc00 (Usable: 639 kB)
 	ext_mem: 0x100000 ~ 0x13e0000 (Usable: 19,328 kB)
 Calibrating timer...  157,081,600 loops/s.
-hd0:0: detected 313 sector (156 kB) disk, model "QEMU HARDDISK", serial "QM00001"
+hd0:0: detected 321 sector (160 kB) disk, model "QEMU HARDDISK", serial "QM00001"
 hd0:1: detected 20,160 sector (9 MB) disk, model "QEMU HARDDISK", serial "QM00002"
 hd1:0: detected 204 sector (102 kB) disk, model "QEMU HARDDISK", serial "QM00003"
 Formatting file system...done.
@@ -14,15 +14,24 @@ Putting 'wait-twice' into the file system...
 Putting 'child-simple' into the file system...
 Executing 'wait-twice':
 (wait-twice) begin
-Kernel PANIC at ../../threads/mmu.c:235 in pml4_set_page(): assertion `pg_ofs (kpage) == 0' failed.
-Call stack: 0x8004217d75 0x800420cea0 0x800421b4fc 0x800420c80c 0x800420c8be 0x800420c963 0x800420c9fb 0x800421b5b5 0x800420764e.
+Page fault at 0x4255000: not present error writing page in kernel context.
+Interrupt 0x0e (#PF Page-Fault Exception) at rip=8004216dd3
+ cr2=0000000004255000 error=               2
+rax 0000000004255000 rbx 0000000000000000 rcx 0000000004255001 rdx 0000000000000080
+rsp 0000008004241e70 rbp 0000008004241ea0 rsi 0000008004241ef8 rdi 0000000004255000
+rip 0000008004216dd3 r8 0000000000000000  r9 0000000000000000 r10 0000000000000000
+r11 0000000000000216 r12 000000800421cebd r13 0000000000000000 r14 0000000000000000
+r15 0000000000000000 rflags 00000206
+es: 001b ds: 001b cs: 0008 ss: 0010
+Kernel PANIC at ../../userprog/exception.c:97 in kill(): Kernel bug - unexpected interrupt in kernel
+Call stack: 0x8004217e2a 0x800421cbf2 0x800421cd71 0x8004208d07 0x8004209125 0x800421785d 0x800421d252 0x800421cf64 0x800421cde6 0x400183 0x4001e1 0x400c82.
 The `backtrace' program can make call stacks useful.
 Read "Backtraces" in the "Debugging Tools" chapter
 of the Pintos documentation for more information.
-Timer: 74 ticks
-Thread: 30 idle ticks, 40 kernel ticks, 4 user ticks
+Timer: 69 ticks
+Thread: 30 idle ticks, 32 kernel ticks, 7 user ticks
 hd0:0: 0 reads, 0 writes
 hd0:1: 107 reads, 446 writes
 hd1:0: 204 reads, 0 writes
-Console: 1225 characters output
+Console: 1841 characters output
 Key

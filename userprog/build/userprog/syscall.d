@@ -12,4 +12,4 @@ userprog/syscall.o: ../../userprog/syscall.c \
  ../../include/intrinsic.h ../../include/threads/mmu.h \
  ../../include/threads/pte.h ../../include/threads/vaddr.h \
  ../../include/devices/input.h ../../include/lib/kernel/stdio.h \
- ../../include/threads/palloc.h
+ ../../include/lib/stdio.h

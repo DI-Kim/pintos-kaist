@@ -1,13 +1,16 @@
 FAIL
-Kernel panic in run: PANIC at ../../threads/mmu.c:235 in pml4_set_page(): assertion `pg_ofs (kpage) == 0' failed.
-Call stack: 0x8004217d75 0x800420cea0 0x800421b4fc 0x800420c80c 0x800420c8be 0x800420c963 0x800420c9fb 0x800421b5b5 0x800420764e
+Kernel panic in run: PANIC at ../../userprog/exception.c:97 in kill(): Kernel bug - unexpected interrupt in kernel
+Call stack: 0x8004217e2a 0x800421cbf2 0x800421cd71 0x8004208d07 0x8004209125 0x800421785d 0x800421d252 0x800421cf64 0x800421cde6 0x400134 0x4002f1 0x400d92
 Translation of call stack:
-0x0000008004217d75: debug_panic (lib/kernel/debug.c:32)
-0x000000800420cea0: pml4_set_page (threads/mmu.c:236)
-0x000000800421b4fc: duplicate_pte (userprog/process.c:118)
-0x000000800420c80c: pt_for_each (threads/mmu.c:113)
-0x000000800420c8be: pgdir_for_each (threads/mmu.c:126)
-0x000000800420c963: pdp_for_each (threads/mmu.c:139)
-0x000000800420c9fb: pml4_for_each (threads/mmu.c:152)
-0x000000800421b5b5: __do_fork (userprog/process.c:150)
-0x000000800420764e: kernel_thread (threads/thread.c:476)
+0x0000008004217e2a: debug_panic (lib/kernel/debug.c:32)
+0x000000800421cbf2: kill (userprog/exception.c:103)
+0x000000800421cd71: page_fault (userprog/exception.c:159 (discriminator 12))
+0x0000008004208d07: intr_handler (threads/interrupt.c:352)
+0x0000008004209125: intr_entry (threads/intr-stubs.o:?)
+0x000000800421785d: strlcpy (lib/string.c:314)
+0x000000800421d252: exec (userprog/syscall.c:269)
+0x000000800421cf64: syscall_handler (userprog/syscall.c:183)
+0x000000800421cde6: no_sti (userprog/syscall-entry.o:?)
+0x0000000000400134: (unknown)
+0x00000000004002f1: (unknown)
+0x0000000000400d92: (unknown)

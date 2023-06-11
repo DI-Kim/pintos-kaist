@@ -1,19 +1,16 @@
 FAIL
-Kernel panic in run: PANIC at ../../threads/thread.c:271 in thread_current(): assertion `is_thread(t)' failed.
-Call stack: 0x8004217d75 0x8004207041 0x800420a3ee 0x800421b07a 0x800421b247 0x800421b22b 0x8004216274 0x80042159ac 0x800421b0da 0x8004215278 0x800421baaf 0x800421b663 0x800421d248 0x800421cad5 0x800421c951
+Kernel panic in run: PANIC at ../../userprog/exception.c:97 in kill(): Kernel bug - unexpected interrupt in kernel
+Call stack: 0x8004217e2a 0x800421cbf2 0x800421cd71 0x8004208d07 0x8004209125 0x800421785d 0x800421d252 0x800421cf64 0x800421cde6 0x400102 0x40017d 0x400c1e
 Translation of call stack:
-0x0000008004217d75: debug_panic (lib/kernel/debug.c:32)
-0x0000008004207041: thread_current (threads/thread.c:272)
-0x000000800420a3ee: lock_held_by_current_thread (threads/synch.c:681)
-0x000000800421b07a: console_locked_by_current_thread (lib/kernel/console.c:111 (discriminator 2))
-0x000000800421b247: putchar_have_lock (lib/kernel/console.c:173)
-0x000000800421b22b: vprintf_helper (lib/kernel/console.c:166)
-0x0000008004216274: format_string (lib/stdio.c:529 (discriminator 3))
-0x00000080042159ac: __vprintf (lib/stdio.c:284)
-0x000000800421b0da: vprintf (lib/kernel/console.c:123)
-0x0000008004215278: printf (lib/stdio.c:80)
-0x000000800421baaf: load (userprog/process.c:430)
-0x000000800421b663: process_exec (userprog/process.c:189)
-0x000000800421d248: exec (userprog/syscall.c:678)
-0x000000800421cad5: syscall_handler (userprog/syscall.c:481)
-0x000000800421c951: no_sti (userprog/syscall-entry.o:?)
+0x0000008004217e2a: debug_panic (lib/kernel/debug.c:32)
+0x000000800421cbf2: kill (userprog/exception.c:103)
+0x000000800421cd71: page_fault (userprog/exception.c:159 (discriminator 12))
+0x0000008004208d07: intr_handler (threads/interrupt.c:352)
+0x0000008004209125: intr_entry (threads/intr-stubs.o:?)
+0x000000800421785d: strlcpy (lib/string.c:314)
+0x000000800421d252: exec (userprog/syscall.c:269)
+0x000000800421cf64: syscall_handler (userprog/syscall.c:183)
+0x000000800421cde6: no_sti (userprog/syscall-entry.o:?)
+0x0000000000400102: (unknown)
+0x000000000040017d: (unknown)
+0x0000000000400c1e: (unknown)
