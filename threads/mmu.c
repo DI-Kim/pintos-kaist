@@ -210,6 +210,9 @@ pml4_activate (uint64_t *pml4) {
  * address UADDR in pml4.  Returns the kernel virtual address
  * corresponding to that physical address, or a null pointer if
  * UADDR is unmapped. */
+//! 유저 가상 주소와 대응하는 물리 주소를 찾아
+//! 그 물리 주소와 대응하는 커널 가상 주소를 리턴한다.
+//! 없다면 NULL을 리턴
 void *
 pml4_get_page (uint64_t *pml4, const void *uaddr) {
 	ASSERT (is_user_vaddr (uaddr));

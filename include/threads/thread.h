@@ -5,32 +5,32 @@
 #include <list.h>
 #include <stdint.h>
 #include "threads/interrupt.h"
+#include "threads/synch.h"
 #ifdef VM
 #include "vm/vm.h"
 #endif
 
-
 /* States in a thread's life cycle. */
-enum thread_status {
-	THREAD_RUNNING,     /* Running thread. */
-	THREAD_READY,       /* Not running but ready to run. */
-	THREAD_BLOCKED,     /* Waiting for an event to trigger. */
-	THREAD_DYING        /* About to be destroyed. */
+enum thread_status
+{
+	THREAD_RUNNING, /* Running thread. */
+	THREAD_READY,	/* Not running but ready to run. */
+	THREAD_BLOCKED, /* Waiting for an event to trigger. */
+	THREAD_DYING	/* About to be destroyed. */
 };
 
 /* Thread identifier type.
    You can redefine this to whatever type you like. */
 typedef int tid_t;
-#define TID_ERROR ((tid_t) -1)          /* Error value for tid_t. */
+#define TID_ERROR ((tid_t)-1) /* Error value for tid_t. */
 
 /* Thread priorities. */
-#define PRI_MIN 0                       /* Lowest priority. */
-#define PRI_DEFAULT 31                  /* Default priority. */
-#define PRI_MAX 63                      /* Highest priority. */
-//! project 2
-#define FDT_PAGES 4  // PML4 이기 때문에 4가 아닐까? 왜 2로 했을까...
-#define OPEN_FILE_LIMIT 128  // extra: dup2 할때는 제한 x
-//!
+#define PRI_MIN 0	   /* Lowest priority. */
+#define PRI_DEFAULT 31 /* Default priority. */
+#define PRI_MAX 63	   /* Highest priority. */
+
+#define FDT_COUNT_LIMIT 128
+#define FDT_PAGES 2
 
 /* A kernel thread or user process.
  *
@@ -89,30 +89,41 @@ typedef int tid_t;
  * only because they are mutually exclusive: only a thread in the
  * ready state is on the run queue, whereas only a thread in the
  * blocked state is on a semaphore wait list. */
-struct thread {
-	/* Owned by thread.c. */
-	tid_t tid;                          /* Thread identifier. */
-	enum thread_status status;          /* Thread state. */
-	char name[16];                      /* Name (for debugging purposes). */
-	int priority;                       /* Priority. */
-    uint64_t wakeup_ticks;  // 깨우는 틱
-    int original_priority;
-    struct lock *wait_on_lock;
-    struct list donation_list;
-    struct list_elem donation_elem;
-	/* Shared between thread.c and synch.c. */
-	struct list_elem elem;              /* List element. */
 
-//!
-    struct file *FDtable;
-    int next_fd;  // fd의 인덱스
-    int exit_status;
-    struct list_elem all_elem;  // 모든 thread 리스트
-//!
+struct thread
+{
+	/* Owned by thread.c. */
+	tid_t tid;				   /* Thread identifier. */
+	enum thread_status status; /* Thread state. */
+	char name[16];			   /* Name (for debugging purposes). */
+	int priority;			   /* Priority. */
+	int64_t wakeup_ticks;	   // 깨어날 tick
+
+	/* Shared between thread.c and synch.c. */
+	struct list_elem elem; /* List element. */
+
+	int init_priority;
+	struct lock *wait_on_lock;
+	struct list donations;
+	struct list_elem donation_elem;
+
+	int exit_status;
+	struct file **fdt;
+	int next_fd;
+
+    struct intr_frame parent_if;
+    struct list child_list;
+    struct list_elem child_elem;
+
+    struct semaphore load_sema;
+    struct semaphore exit_sema;
+    struct semaphore wait_sema;
+
+    struct file *running;
 
 #ifdef USERPROG
 	/* Owned by userprog/process.c. */
-	uint64_t *pml4;                     /* Page map level 4 */
+	uint64_t *pml4; /* Page map level 4 */
 #endif
 #ifdef VM
 	/* Table for whole virtual memory owned by thread. */
@@ -120,54 +131,53 @@ struct thread {
 #endif
 
 	/* Owned by thread.c. */
-	struct intr_frame tf;               /* Information for switching */
-	unsigned magic;                     /* Detects stack overflow. */
+	struct intr_frame tf; /* Information for switching */
+	unsigned magic;		  /* Detects stack overflow. */
 };
-
-
 
 /* If false (default), use round-robin scheduler.
    If true, use multi-level feedback queue scheduler.
    Controlled by kernel command-line option "-o mlfqs". */
 extern bool thread_mlfqs;
 
-void thread_init (void);
-void thread_start (void);
+void thread_init(void);
+void thread_start(void);
 
-void thread_tick (void);
-void thread_print_stats (void);
+void thread_tick(void);
+void thread_print_stats(void);
 
-typedef void thread_func (void *aux);
-tid_t thread_create (const char *name, int priority, thread_func *, void *);
+typedef void thread_func(void *aux);
+tid_t thread_create(const char *name, int priority, thread_func *, void *);
 
-void thread_block (void);
-void thread_unblock (struct thread *);
+void thread_block(void);
+void thread_unblock(struct thread *);
 
-struct thread *thread_current (void);
-tid_t thread_tid (void);
-const char *thread_name (void);
+struct thread *thread_current(void);
+tid_t thread_tid(void);
+const char *thread_name(void);
 
-void thread_exit (void) NO_RETURN;
-void thread_yield (void);
-
-int thread_get_priority (void);
-void thread_set_priority (int);
-
-int thread_get_nice (void);
-void thread_set_nice (int);
-int thread_get_recent_cpu (void);
-int thread_get_load_avg (void);
-
-void do_iret (struct intr_frame *tf);
-
-// add functions
-void thread_wakeup(int64_t current_tick);
+void thread_exit(void) NO_RETURN;
+void thread_yield(void);
 void thread_sleep(int64_t ticks);
-bool compare_less_tick(const struct list_elem *a, const struct list_elem *b, void *aux);
-bool thread_compare_priority(const struct list_elem *a, const struct list_elem *b, void *aux);
-void thread_priority_yield(void);
-//! project 2
-int process_add_file(struct file *f);
-struct file *process_get_file(int fd);
-void process_close_file(int fd);
+void thread_wakeup(int64_t current_ticks);
+bool cmp_thread_ticks(const struct list_elem *a, const struct list_elem *b, void *aux);
+
+int thread_get_priority(void);
+void thread_set_priority(int);
+bool cmp_thread_priority(const struct list_elem *a, const struct list_elem *b, void *aux);
+bool cmp_sema_priority(const struct list_elem *a, const struct list_elem *b, void *aux);
+void preempt_priority(void);
+
+bool cmp_donation_priority(const struct list_elem *a, const struct list_elem *b, void *aux);
+void donate_priority(void);
+void remove_donor(struct lock *lock);
+void update_priority_for_donations(void);
+
+int thread_get_nice(void);
+void thread_set_nice(int);
+int thread_get_recent_cpu(void);
+int thread_get_load_avg(void);
+
+void do_iret(struct intr_frame *tf);
+
 #endif /* threads/thread.h */

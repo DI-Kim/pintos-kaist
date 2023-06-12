@@ -19,10 +19,13 @@ typedef int off_t;
 /* Typical return values from main() and arguments to exit(). */
 #define EXIT_SUCCESS 0          /* Successful execution. */
 #define EXIT_FAILURE 1          /* Unsuccessful execution. */
-
+//!
+void check_address (void *addr);
+void get_argument(void *rsp, int *arg, int count);
+//!
 /* Projects 2 and later. */
-void halt (void) NO_RETURN;
-void exit (int status) NO_RETURN;
+void halt (void);
+void exit (int status);
 pid_t fork (const char *thread_name);
 int exec (const char *file);
 int wait (pid_t);

@@ -2,6 +2,13 @@
     "files.associations": {
         "*.html": "html",
         "stddef.h": "c",
-        "syscall.h": "c"
+        "syscall.h": "c",
+        "synch.h": "c",
+        "stdio.h": "c",
+        "syscall-nr.h": "c",
+        "*.inc": "c",
+        "filesys.h": "c",
+        "init.h": "c",
+        "flags.h": "c"
     }
 }
