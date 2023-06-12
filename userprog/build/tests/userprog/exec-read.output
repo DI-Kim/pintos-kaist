@@ -4,8 +4,8 @@ Kernel command line: -q -f put exec-read put sample.txt put child-read run exec-
 Pintos booting with: 
 	base_mem: 0x0 ~ 0x9fc00 (Usable: 639 kB)
 	ext_mem: 0x100000 ~ 0x13e0000 (Usable: 19,328 kB)
-Calibrating timer...  130,867,200 loops/s.
-hd0:0: detected 321 sector (160 kB) disk, model "QEMU HARDDISK", serial "QM00001"
+Calibrating timer...  157,081,600 loops/s.
+hd0:0: detected 313 sector (156 kB) disk, model "QEMU HARDDISK", serial "QM00001"
 hd0:1: detected 20,160 sector (9 MB) disk, model "QEMU HARDDISK", serial "QM00002"
 hd1:0: detected 229 sector (114 kB) disk, model "QEMU HARDDISK", serial "QM00003"
 Formatting file system...done.
@@ -17,24 +17,23 @@ Executing 'exec-read':
 (exec-read) begin
 (exec-read) open "sample.txt"
 (exec-read) read "sample.txt" first 20 bytes
-Page fault at 0x4256000: not present error writing page in kernel context.
-Interrupt 0x0e (#PF Page-Fault Exception) at rip=8004216dd3
- cr2=0000000004256000 error=               2
-rax 0000000004256000 rbx 0000000000000000 rcx 0000000004256001 rdx 00000000000000f8
-rsp 000000800424ce70 rbp 000000800424cea0 rsi 000000800424cef8 rdi 0000000004256000
-rip 0000008004216dd3 r8 0000000000000000  r9 0000000000000000 r10 0000000000000000
-r11 0000000000000212 r12 000000800421cebd r13 0000000000000000 r14 0000000000000000
-r15 0000000000000000 rflags 00000202
-es: 001b ds: 001b cs: 0008 ss: 0010
-Kernel PANIC at ../../userprog/exception.c:97 in kill(): Kernel bug - unexpected interrupt in kernel
-Call stack: 0x8004217e2a 0x800421cbf2 0x800421cd71 0x8004208d07 0x8004209125 0x800421785d 0x800421d252 0x800421cf64 0x800421cde6 0x400342 0x40046e 0x400f0f.
-The `backtrace' program can make call stacks useful.
-Read "Backtraces" in the "Debugging Tools" chapter
-of the Pintos documentation for more information.
+(child-read) begin
+(child-read) open "sample.txt"
+(child-read) read "sample.txt" first 20 bytes
+(child-read) read "sample.txt" remainders
+(child-read) Child success
+(child-read) end
+child-read: exit(0)
+(exec-read) Parent success
+(exec-read) end
+exec-read: exit(0)
+Execution of 'exec-read' complete.
 Timer: 73 ticks
-Thread: 30 idle ticks, 35 kernel ticks, 8 user ticks
+Thread: 30 idle ticks, 36 kernel ticks, 8 user ticks
 hd0:0: 0 reads, 0 writes
-hd0:1: 144 reads, 506 writes
+hd0:1: 208 reads, 506 writes
 hd1:0: 229 reads, 0 writes
-Console: 1967 characters output
-Key
+Console: 1266 characters output
+Keyboard: 0 keys pressed
+Exception: 0 page faults
+Powering off...

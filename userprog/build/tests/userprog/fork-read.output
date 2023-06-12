@@ -5,7 +5,7 @@ Pintos booting with:
 	base_mem: 0x0 ~ 0x9fc00 (Usable: 639 kB)
 	ext_mem: 0x100000 ~ 0x13e0000 (Usable: 19,328 kB)
 Calibrating timer...  157,081,600 loops/s.
-hd0:0: detected 321 sector (160 kB) disk, model "QEMU HARDDISK", serial "QM00001"
+hd0:0: detected 313 sector (156 kB) disk, model "QEMU HARDDISK", serial "QM00001"
 hd0:1: detected 20,160 sector (9 MB) disk, model "QEMU HARDDISK", serial "QM00002"
 hd1:0: detected 111 sector (55 kB) disk, model "QEMU HARDDISK", serial "QM00003"
 Formatting file system...done.
@@ -19,15 +19,16 @@ Executing 'fork-read':
 (fork-read) Child: pintos is funny!
 (fork-read) end
 child: exit(0)
-Kernel PANIC at ../../filesys/inode.c:304 in inode_allow_write(): assertion `inode->deny_write_cnt > 0' failed.
-Call stack: 0x8004217e2a 0x800421fe82 0x800421ecd9 0x800421ea86 0x800421d6ab 0x800421bcef 0x8004207172 0x800421d1db 0x800421cf1c 0x800421cde6 0x400fed.
-The `backtrace' program can make call stacks useful.
-Read "Backtraces" in the "Debugging Tools" chapter
-of the Pintos documentation for more information.
-Timer: 64 ticks
-Thread: 30 idle ticks, 30 kernel ticks, 4 user ticks
+(fork-read) Parent success
+(fork-read) end
+fork-read: exit(0)
+Execution of 'fork-read' complete.
+Timer: 67 ticks
+Thread: 30 idle ticks, 31 kernel ticks, 6 user ticks
 hd0:0: 0 reads, 0 writes
-hd0:1: 117 reads, 260 writes
+hd0:1: 118 reads, 260 writes
 hd1:0: 111 reads, 0 writes
-Console: 1368 characters output
-Key
+Console: 1047 characters output
+Keyboard: 0 keys pressed
+Exception: 0 page faults
+Powering off...
