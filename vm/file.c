@@ -7,7 +7,8 @@ static bool file_backed_swap_out (struct page *page);
 static void file_backed_destroy (struct page *page);
 
 /* DO NOT MODIFY this struct */
-static const struct page_operations file_ops = {
+//* file-backed 페이지에 대한 함수 포인터 테이블, 수정 금지
+static const struct page_operations file_ops = { 
 	.swap_in = file_backed_swap_in,
 	.swap_out = file_backed_swap_out,
 	.destroy = file_backed_destroy,

@@ -9,6 +9,8 @@
         "*.inc": "c",
         "filesys.h": "c",
         "init.h": "c",
-        "flags.h": "c"
+        "flags.h": "c",
+        "vm.h": "c",
+        "palloc.h": "c"
     }
 }

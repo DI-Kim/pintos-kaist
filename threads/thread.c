@@ -189,7 +189,6 @@ tid_t thread_create(const char *name, int priority, thread_func *function, void 
 	if (t == NULL)
 		return TID_ERROR;
 
-
 	/* Initialize thread. */
 	init_thread(t, name, priority); // 위에서 할당한 4KB의 단일 공간에 스레드 구조체를 초기화한다. (스레드 구조체의 크기는 64바이트 또는 128바이트가 된다.)
 	tid = t->tid = allocate_tid();	// 스레드의 고유한 ID를 할당한다.
@@ -205,11 +204,12 @@ tid_t thread_create(const char *name, int priority, thread_func *function, void 
 	t->tf.cs = SEL_KCSEG;
 	t->tf.eflags = FLAG_IF;
 
-    list_push_back(&thread_current()->child_list, &t->child_elem);
-    t->fdt = palloc_get_multiple(PAL_ZERO, FDT_PAGES);
-    if (t->fdt == NULL)
-        return TID_ERROR;
+	// 현재 스레드의 자식으로 추가
+	list_push_back(&thread_current()->child_list, &t->child_elem);
 
+	t->fdt = palloc_get_multiple(PAL_ZERO, FDT_PAGES);
+	if (t->fdt == NULL)
+		return TID_ERROR;
 	/* Add to run queue. */
 	thread_unblock(t);
 	preempt_priority();
@@ -503,12 +503,10 @@ init_thread(struct thread *t, const char *name, int priority)
 
 	t->exit_status = 0;
 	t->next_fd = 2;
-    // for (int i = 0; i < FDT_COUNT_LIMIT; i++)
-    //     t->fdt[i] = NULL;
-    list_init(&(t->child_list));
-    sema_init(&t->load_sema, 0);
-    sema_init(&t->exit_sema, 0);
-    sema_init(&t->wait_sema, 0);
+	sema_init(&t->load_sema, 0);
+	sema_init(&t->exit_sema, 0);
+	sema_init(&t->wait_sema, 0);
+	list_init(&(t->child_list));
 }
 
 /* Chooses and returns the next thread to be scheduled.  Should
