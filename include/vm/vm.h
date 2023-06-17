@@ -42,13 +42,14 @@ struct thread;
  * DO NOT REMOVE/MODIFY PREDEFINED MEMBER OF THIS STRUCTURE. */
 struct page {
 	const struct page_operations *operations;
-	void *va;              /* Address in terms of user space */
+	void *va;              /* Address in terms of user space : virtual address */
 	struct frame *frame;   /* Back reference for frame */
 
 	/* Your implementation */
 
 	/* Per-type data are binded into the union.
 	 * Each function automatically detects the current union */
+    //! 어떤 용도로 사용되는지 구분, 종류에 따라 생성 및 파괴 루틴이 달라져야한다.
 	union {
 		struct uninit_page uninit;
 		struct anon_page anon;
