@@ -13,14 +13,14 @@ Formatting file system...done.
 Boot complete.
 Putting 'wait-bad-pid' into the file system...
 Executing 'wait-bad-pid':
-Kernel PANIC at ../../userprog/process.c:75 in initd(): Fail to launch initd
+Kernel PANIC at ../../userprog/process.c:76 in initd(): Fail to launch initd
 
 Call stack: 0x8004217e36 0x800421b4ec 0x80042076c5.
 The `backtrace' program can make call stacks useful.
 Read "Backtraces" in the "Debugging Tools" chapter
 of the Pintos documentation for more information.
-Timer: 64 ticks
-Thread: 30 idle ticks, 34 kernel ticks, 0 user ticks
+Timer: 63 ticks
+Thread: 30 idle ticks, 33 kernel ticks, 0 user ticks
 hd0:0: 0 reads, 0 writes
 hd0:1: 39 reads, 232 writes
 hd1:0: 102 reads, 0 writes
