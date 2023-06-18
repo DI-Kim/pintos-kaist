@@ -62,7 +62,7 @@ err:
 
 /* Find VA from spt and return page. On error, return NULL. */
 struct page *
-spt_find_page (struct supplemental_page_table *spt UNUSED, void *va UNUSED) {
+spt_find_page (struct supplemental_page_table *spt, void *va) {
 	struct page *page = (struct page*)malloc(sizeof(struct page));
     struct hash_elem *e;
     // pg_round_down을 통해 해당 가상주소의 페이지 첫주소로 page의 va 저장
@@ -79,12 +79,15 @@ spt_find_page (struct supplemental_page_table *spt UNUSED, void *va UNUSED) {
 
 /* Insert PAGE into spt with validation. */
 bool
-spt_insert_page (struct supplemental_page_table *spt UNUSED,
-		struct page *page UNUSED) {
-	int succ = false;
-	/* TODO: Fill this function. */
+spt_insert_page (struct supplemental_page_table *spt, struct page *page) {
+	// int succ = false;
+	// return succ;
+    // hash_insert의 리턴값이  NULL이면 insert가 잘 된 것
+    if (hash_insert(&spt->spt_type_hash, &page->page_elem) == NULL) 
+        return true;
+    else
+        return false;
 
-	return succ;
 }
 
 void
@@ -203,7 +206,7 @@ uint64_t hash_hash (const struct hash_elem *e, void *aux) {
     struct page *current_page = hash_entry(e, struct page, page_elem);
     return hash_bytes(&current_page->va, sizeof(&current_page->va));
 }
-//! a < b = true (va로)
+// a < b = true (va로)
 bool hash_less (const struct hash_elem *a, const struct hash_elem *b, void *aux) {
     struct page *page_a = hash_entry(a, struct page, page_elem);
     struct page *page_b = hash_entry(b, struct page, page_elem);
