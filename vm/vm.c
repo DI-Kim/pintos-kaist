@@ -63,10 +63,18 @@ err:
 /* Find VA from spt and return page. On error, return NULL. */
 struct page *
 spt_find_page (struct supplemental_page_table *spt UNUSED, void *va UNUSED) {
-	struct page *page = NULL;
-	/* TODO: Fill this function. */
+	struct page *page = (struct page*)malloc(sizeof(struct page));
+    struct hash_elem *e;
+    // pg_round_down을 통해 해당 가상주소의 페이지 첫주소로 page의 va 저장
+    page->va = pg_round_down(va);
+    // hash_find를 통해 page_elem을 e로 저장
+    e = hash_find(&spt->spt_type_hash, &page->page_elem);
 
-	return page;
+    free(page);
+
+    if (e == NULL)
+        return NULL;
+    return hash_entry(e, struct page, page_elem);
 }
 
 /* Insert PAGE into spt with validation. */
@@ -174,6 +182,7 @@ vm_do_claim_page (struct page *page) {
 /* Initialize new supplemental page table */
 void
 supplemental_page_table_init (struct supplemental_page_table *spt UNUSED) {
+    hash_init(&spt->spt_type_hash, hash_hash, hash_less, NULL);
 }
 
 /* Copy supplemental page table from src to dst */
@@ -187,4 +196,16 @@ void
 supplemental_page_table_kill (struct supplemental_page_table *spt UNUSED) {
 	/* TODO: Destroy all the supplemental_page_table hold by thread and
 	 * TODO: writeback all the modified contents to the storage. */
+}
+
+//! add function
+uint64_t hash_hash (const struct hash_elem *e, void *aux) {
+    struct page *current_page = hash_entry(e, struct page, page_elem);
+    return hash_bytes(&current_page->va, sizeof(&current_page->va));
+}
+//! a < b = true (va로)
+bool hash_less (const struct hash_elem *a, const struct hash_elem *b, void *aux) {
+    struct page *page_a = hash_entry(a, struct page, page_elem);
+    struct page *page_b = hash_entry(b, struct page, page_elem);
+    return page_a->va < page_b->va;
 }

@@ -13,6 +13,7 @@
         "vm.h": "c",
         "palloc.h": "c",
         "uninit.h": "c",
-        "process.h": "c"
+        "process.h": "c",
+        "thread.h": "c"
     }
 }

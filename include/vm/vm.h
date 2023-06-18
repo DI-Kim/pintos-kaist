@@ -2,6 +2,7 @@
 #define VM_VM_H
 #include <stdbool.h>
 #include "threads/palloc.h"
+#include "lib/kernel/hash.h"
 
 enum vm_type {
 	/* page not initialized */
@@ -44,6 +45,7 @@ struct page {
 	const struct page_operations *operations;
 	void *va;              /* Address in terms of user space : virtual address */
 	struct frame *frame;   /* Back reference for frame */
+    struct hash_elem page_elem; //! key 로 va, value 로 page
 
 	/* Your implementation */
 
@@ -85,7 +87,9 @@ struct page_operations {
 /* Representation of current process's memory space.
  * We don't want to force you to obey any specific design for this struct.
  * All designs up to you for this. */
+//! SPT 설정
 struct supplemental_page_table {
+    struct hash spt_type_hash;
 };
 
 #include "threads/thread.h"
@@ -110,4 +114,7 @@ void vm_dealloc_page (struct page *page);
 bool vm_claim_page (void *va);
 enum vm_type page_get_type (struct page *page);
 
+//! add function
+uint64_t hash_hash (const struct hash_elem *e, void *aux);
+bool hash_less (const struct hash_elem *a, const struct hash_elem *b, void *aux);
 #endif  /* VM_VM_H */

@@ -47,10 +47,10 @@ uninit_new (struct page *page, void *va, vm_initializer *init,
 /* Initalize the page on first fault */
 static bool
 uninit_initialize (struct page *page, void *kva) {
-	struct uninit_page *uninit = &page->uninit;
+	struct uninit_page *uninit = &page->uninit; //! page initializer
 
 	/* Fetch first, page_initialize may overwrite the values */
-	vm_initializer *init = uninit->init;
+	vm_initializer *init = uninit->init;  //! vm initializer
 	void *aux = uninit->aux;
 
 	/* TODO: You may need to fix this function. */

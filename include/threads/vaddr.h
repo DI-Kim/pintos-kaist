@@ -23,13 +23,15 @@
 /* Offset within a page. */
 #define pg_ofs(va) ((uint64_t) (va) & PGMASK)
 
-#define pg_no(va) ((uint64_t) (va) >> PGBITS)
+#define pg_no(va) ((uint64_t) (va) >> PGBITS) // page가 몇번째 페이지 인지 반환
 
 /* Round up to nearest page boundary. */
+// 페이지 크기만큼 반올림, 가상 주소의 해당 페이지의 다음 페이지 시작 주소 반환
 #define pg_round_up(va) ((void *) (((uint64_t) (va) + PGSIZE - 1) & ~PGMASK))
 
 /* Round down to nearest page boundary. */
-#define pg_round_down(va) (void *) ((uint64_t) (va) & ~PGMASK)
+// 가상주소의 해당 페이지의 시작 주소 반환
+#define pg_round_down(va) (void *) ((uint64_t) (va) & ~PGMASK) 
 
 /* Kernel virtual address start */
 #define KERN_BASE LOADER_KERN_BASE // LOADER_KERN_BASE = 0x8004000000
