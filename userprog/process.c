@@ -18,6 +18,7 @@
 #include "threads/mmu.h"
 #include "threads/vaddr.h"
 #include "intrinsic.h"
+#define VM
 #ifdef VM
 #include "vm/vm.h"
 #endif

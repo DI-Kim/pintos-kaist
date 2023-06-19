@@ -137,5 +137,5 @@ pass tests/threads/priority-fifo
 pass tests/threads/priority-preempt
 pass tests/threads/priority-sema
 pass tests/threads/priority-condvar
-FAIL tests/threads/priority-donate-chain
+pass tests/threads/priority-donate-chain
 FAIL tests/vm/cow/cow-simple

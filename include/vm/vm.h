@@ -3,6 +3,8 @@
 #include <stdbool.h>
 #include "threads/palloc.h"
 #include "lib/kernel/hash.h"
+#include "threads/vaddr.h"
+// #include "userprog/process.h"
 
 enum vm_type {
 	/* page not initialized */
@@ -46,6 +48,7 @@ struct page {
 	void *va;              /* Address in terms of user space : virtual address */
 	struct frame *frame;   /* Back reference for frame */
     struct hash_elem page_elem; //! key 로 va, value 로 page
+    bool writable;
 
 	/* Your implementation */
 
@@ -62,10 +65,13 @@ struct page {
 	};
 };
 
+//! frame table 생성
+struct list *frame_table;  
 /* The representation of "frame" */
 struct frame {
-	void *kva;
-	struct page *page;
+	void *kva; // 커널 가상 주소
+	struct page *page;  // frame과 연결된 가상 메모리의 page
+    struct list_elem frame_elem;  //! frame table에서 사용할 element 생성
 };
 
 /* The function table for page operations.
@@ -117,4 +123,5 @@ enum vm_type page_get_type (struct page *page);
 //! add function
 uint64_t hash_hash (const struct hash_elem *e, void *aux);
 bool hash_less (const struct hash_elem *a, const struct hash_elem *b, void *aux);
+static struct frame * vm_get_frame (void);
 #endif  /* VM_VM_H */

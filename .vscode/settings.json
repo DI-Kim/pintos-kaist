@@ -14,6 +14,7 @@
         "palloc.h": "c",
         "uninit.h": "c",
         "process.h": "c",
-        "thread.h": "c"
+        "thread.h": "c",
+        "hash.h": "c"
     }
 }

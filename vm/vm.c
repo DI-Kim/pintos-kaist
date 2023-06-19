@@ -16,6 +16,7 @@ vm_init (void) {
 	register_inspect_intr ();
 	/* DO NOT MODIFY UPPER LINES. */
 	/* TODO: Your code goes here. */
+    list_init(&frame_table);
 }
 
 /* Get the type of the page. This function is useful if you want to know the
@@ -43,18 +44,37 @@ static struct frame *vm_evict_frame (void);
 bool
 vm_alloc_page_with_initializer (enum vm_type type, void *upage, bool writable,
 		vm_initializer *init, void *aux) {
-
+    //! upage = user virtual address
 	ASSERT (VM_TYPE(type) != VM_UNINIT)
 
 	struct supplemental_page_table *spt = &thread_current ()->spt;
 
 	/* Check wheter the upage is already occupied or not. */
+    // 가상 주소 upage가 속한 페이지가 spt에 있는지 확인
 	if (spt_find_page (spt, upage) == NULL) {
 		/* TODO: Create the page, fetch the initialier according to the VM type,
 		 * TODO: and then create "uninit" page struct by calling uninit_new. You
 		 * TODO: should modify the field after calling the uninit_new. */
+        // upage에 페이지 할당이 안되있으므로 새 페이지 할당 및 uninit_new()를 통해 초기화
+        struct page *p = (struct page *)malloc(sizeof(struct page));
+        // initializer type 설정
+        typedef bool (*initializer) (struct page *, enum vm_type , void *);
+        initializer which_initializer;
 
+        switch (type) {
+            case VM_ANON:
+                which_initializer = anon_initializer;
+                break;
+            case VM_FILE:
+                which_initializer = file_backed_initializer;
+                break;
+	    }
+        uninit_new(&p, upage, init, type, aux, which_initializer);	
+        // page를 초기화했으므로 새로 만들었던 writable을 저장 (uninit_new뒤에 modifiy)
+        p->writable = writable;
 		/* TODO: Insert the page into the spt. */
+        spt_insert_page(spt, p);
+        return true;
 	}
 err:
 	return false;
@@ -74,6 +94,7 @@ spt_find_page (struct supplemental_page_table *spt, void *va) {
 
     if (e == NULL)
         return NULL;
+    // 해당 page_elem의 page 리턴
     return hash_entry(e, struct page, page_elem);
 }
 
@@ -119,14 +140,23 @@ vm_evict_frame (void) {
  * and return it. This always return valid address. That is, if the user pool
  * memory is full, this function evicts the frame to get the available memory
  * space.*/
+// queue방식으로 프레임 테이블 사용하겠음
 static struct frame *
 vm_get_frame (void) {
-	struct frame *frame = NULL;
-	/* TODO: Fill this function. */
+	struct frame *frame = (struct frame *)malloc(sizeof(struct frame));
 
 	ASSERT (frame != NULL);
 	ASSERT (frame->page == NULL);
-	return frame;
+
+    if (frame->kva = palloc_get_page(PAL_USER | PAL_ZERO)) {
+        list_push_back(frame_table, &frame->frame_elem);
+    }
+    else {
+        PANIC("todo");
+        // frame = vm_evict_frame();
+    }
+    // frame->page = NULL;
+    return frame;
 }
 
 /* Growing the stack. */
@@ -161,9 +191,12 @@ vm_dealloc_page (struct page *page) {
 
 /* Claim the page that allocate on VA. */
 bool
-vm_claim_page (void *va UNUSED) {
+vm_claim_page (void *va) {
 	struct page *page = NULL;
-	/* TODO: Fill this function */
+	
+    page = spt_find_page(&thread_current()->spt, va);
+    if (page == NULL)
+        return false;
 
 	return vm_do_claim_page (page);
 }
@@ -172,19 +205,21 @@ vm_claim_page (void *va UNUSED) {
 static bool
 vm_do_claim_page (struct page *page) {
 	struct frame *frame = vm_get_frame ();
+    struct thread *curr = thread_current();
 
 	/* Set links */
 	frame->page = page;
 	page->frame = frame;
 
 	/* TODO: Insert page table entry to map page's VA to frame's PA. */
-
-	return swap_in (page, frame->kva);
+    if (pml4_get_page(curr->pml4, page->va) == NULL && pml4_set_page(curr->pml4, page->va, frame->kva, page->writable))
+        return swap_in (page, frame->kva);
+    return false;
 }
 
 /* Initialize new supplemental page table */
 void
-supplemental_page_table_init (struct supplemental_page_table *spt UNUSED) {
+supplemental_page_table_init (struct supplemental_page_table *spt ) {
     hash_init(&spt->spt_type_hash, hash_hash, hash_less, NULL);
 }
 
