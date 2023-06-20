@@ -4,7 +4,7 @@ Kernel command line: -q -f put pt-big-stk-obj run pt-big-stk-obj
 Pintos booting with: 
 	base_mem: 0x0 ~ 0x9fc00 (Usable: 639 kB)
 	ext_mem: 0x100000 ~ 0x13e0000 (Usable: 19,328 kB)
-Calibrating timer...  157,081,600 loops/s.
+Calibrating timer...  107,929,600 loops/s.
 hd0:0: detected 321 sector (160 kB) disk, model "QEMU HARDDISK", serial "QM00001"
 hd0:1: detected 20,160 sector (9 MB) disk, model "QEMU HARDDISK", serial "QM00002"
 hd1:0: detected 113 sector (56 kB) disk, model "QEMU HARDDISK", serial "QM00003"
@@ -12,16 +12,17 @@ hd1:1: detected 8,064 sector (3 MB) disk, model "QEMU HARDDISK", serial "QM00004
 Formatting file system...done.
 Boot complete.
 Putting 'pt-big-stk-obj' into the file system...
-Kernel PANIC at ../../devices/disk.c:214 in disk_read(): assertion `d != NULL' failed.
-Call stack: 0x8004217e36 0x8004213442 0x800421f768 0x800421edb6 0x800421d8d3 0x8004220204 0x80042068cc 0x8004206186.
-The `backtrace' program can make call stacks useful.
-Read "Backtraces" in the "Debugging Tools" chapter
-of the Pintos documentation for more information.
-Timer: 57 ticks
-Thread: 30 idle ticks, 27 kernel ticks, 0 user ticks
+Executing 'pt-big-stk-obj':
+(pt-big-stk-obj) begin
+pt-big-stk-obj: exit(-1)
+Execution of 'pt-big-stk-obj' complete.
+Timer: 72 ticks
+Thread: 30 idle ticks, 40 kernel ticks, 2 user ticks
 hd0:0: 0 reads, 0 writes
-hd0:1: 9 reads, 18 writes
-hd1:0: 1 reads, 0 writes
+hd0:1: 85 reads, 254 writes
+hd1:0: 113 reads, 0 writes
 hd1:1: 0 reads, 0 writes
-Console: 1205 characters output
-Key
+Console: 967 characters output
+Keyboard: 0 keys pressed
+Exception: 1 page faults
+Powering off...

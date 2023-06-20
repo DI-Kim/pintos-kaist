@@ -12,16 +12,20 @@ hd1:1: detected 8,064 sector (3 MB) disk, model "QEMU HARDDISK", serial "QM00004
 Formatting file system...done.
 Boot complete.
 Putting 'read-zero' into the file system...
-Kernel PANIC at ../../devices/disk.c:214 in disk_read(): assertion `d != NULL' failed.
-Call stack: 0x8004217e36 0x8004213442 0x800421f768 0x800421edb6 0x800421d8d3 0x8004220204 0x80042068cc 0x8004206186.
-The `backtrace' program can make call stacks useful.
-Read "Backtraces" in the "Debugging Tools" chapter
-of the Pintos documentation for more information.
-Timer: 59 ticks
-Thread: 30 idle ticks, 29 kernel ticks, 0 user ticks
+Putting 'sample.txt' into the file system...
+Executing 'read-zero':
+(read-zero) begin
+(read-zero) open "sample.txt"
+(read-zero) end
+read-zero: exit(0)
+Execution of 'read-zero' complete.
+Timer: 65 ticks
+Thread: 30 idle ticks, 33 kernel ticks, 3 user ticks
 hd0:0: 0 reads, 0 writes
-hd0:1: 9 reads, 18 writes
-hd1:0: 1 reads, 0 writes
+hd0:1: 111 reads, 248 writes
+hd1:0: 105 reads, 0 writes
 hd1:1: 0 reads, 0 writes
-Console: 1205 characters output
-Key
+Console: 1038 characters output
+Keyboard: 0 keys pressed
+Exception: 0 page faults
+Powering off...

@@ -12,16 +12,20 @@ hd1:1: detected 8,064 sector (3 MB) disk, model "QEMU HARDDISK", serial "QM00004
 Formatting file system...done.
 Boot complete.
 Putting 'mmap-write' into the file system...
-Kernel PANIC at ../../devices/disk.c:214 in disk_read(): assertion `d != NULL' failed.
-Call stack: 0x8004217e36 0x8004213442 0x800421f768 0x800421edb6 0x800421d8d3 0x8004220204 0x80042068cc 0x8004206186.
-The `backtrace' program can make call stacks useful.
-Read "Backtraces" in the "Debugging Tools" chapter
-of the Pintos documentation for more information.
-Timer: 58 ticks
-Thread: 30 idle ticks, 28 kernel ticks, 0 user ticks
+Executing 'mmap-write':
+(mmap-write) begin
+(mmap-write) create "sample.txt"
+(mmap-write) open "sample.txt"
+(mmap-write) mmap "sample.txt"
+mmap-write: exit(-1)
+Execution of 'mmap-write' complete.
+Timer: 68 ticks
+Thread: 30 idle ticks, 35 kernel ticks, 4 user ticks
 hd0:0: 0 reads, 0 writes
-hd0:1: 9 reads, 18 writes
-hd1:0: 1 reads, 0 writes
+hd0:1: 116 reads, 256 writes
+hd1:0: 107 reads, 0 writes
 hd1:1: 0 reads, 0 writes
-Console: 1193 characters output
-Key
+Console: 1035 characters output
+Keyboard: 0 keys pressed
+Exception: 1 page faults
+Powering off...

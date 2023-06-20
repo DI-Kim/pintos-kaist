@@ -1,12 +1,61 @@
 FAIL
-Kernel panic in run: PANIC at ../../devices/disk.c:214 in disk_read(): assertion `d != NULL' failed.
-Call stack: 0x8004217e36 0x8004213442 0x800421f768 0x800421edb6 0x800421d8d3 0x8004220204 0x80042068cc 0x8004206186
-Translation of call stack:
-0x0000008004217e36: debug_panic (lib/kernel/debug.c:32)
-0x0000008004213442: disk_read (devices/disk.c:215)
-0x000000800421f768: inode_open (filesys/inode.c:128)
-0x000000800421edb6: dir_open_root (filesys/directory.c:49)
-0x000000800421d8d3: filesys_create (filesys/filesys.c:63)
-0x0000008004220204: fsutil_put (filesys/fsutil.c:107)
-0x00000080042068cc: run_actions (threads/init.c:297)
-0x0000008004206186: main (threads/init.c:125)
+Test output failed to match any acceptable form.
+
+Acceptable output:
+  (fork-recursive) begin
+  (fork-recursive) child run
+  (fork-recursive) child run
+  (fork-recursive) child run
+  (fork-recursive) child run
+  (fork-recursive) child run
+  (fork-recursive) child run
+  (fork-recursive) child run
+  (fork-recursive) child run
+  child: exit(10)
+  (fork-recursive) Parent: child exit status is 10
+  child: exit(10)
+  (fork-recursive) Parent: child exit status is 10
+  child: exit(9)
+  (fork-recursive) Parent: child exit status is 9
+  child: exit(8)
+  (fork-recursive) Parent: child exit status is 8
+  child: exit(7)
+  (fork-recursive) Parent: child exit status is 7
+  child: exit(6)
+  (fork-recursive) Parent: child exit status is 6
+  child: exit(5)
+  (fork-recursive) Parent: child exit status is 5
+  child: exit(4)
+  (fork-recursive) Parent: child exit status is 4
+  (fork-recursive) end
+  fork-recursive: exit(0)
+Differences in `diff -u' format:
+  (fork-recursive) begin
+- (fork-recursive) child run
+- (fork-recursive) child run
+- (fork-recursive) child run
+- (fork-recursive) child run
+- (fork-recursive) child run
+- (fork-recursive) child run
+- (fork-recursive) child run
+- (fork-recursive) child run
+- child: exit(10)
+- (fork-recursive) Parent: child exit status is 10
+- child: exit(10)
+- (fork-recursive) Parent: child exit status is 10
+- child: exit(9)
+- (fork-recursive) Parent: child exit status is 9
+- child: exit(8)
+- (fork-recursive) Parent: child exit status is 8
+- child: exit(7)
+- (fork-recursive) Parent: child exit status is 7
+- child: exit(6)
+- (fork-recursive) Parent: child exit status is 6
+- child: exit(5)
+- (fork-recursive) Parent: child exit status is 5
+- child: exit(4)
+- (fork-recursive) Parent: child exit status is 4
++ child: exit(-1)
++ (fork-recursive) Parent: child exit status is -1
+  (fork-recursive) end
+  fork-recursive: exit(0)

@@ -1,12 +1,16 @@
 FAIL
-Kernel panic in run: PANIC at ../../devices/disk.c:214 in disk_read(): assertion `d != NULL' failed.
-Call stack: 0x8004217e36 0x8004213442 0x800421f768 0x800421edb6 0x800421d8d3 0x8004220204 0x80042068cc 0x8004206186
+Kernel panic in run: PANIC at ../../userprog/exception.c:97 in kill(): Kernel bug - unexpected interrupt in kernel
+Call stack: 0x8004217e49 0x800421cb37 0x8004208d26 0x8004209144 0x800421bba3 0x800421d5c3 0x800421ce80 0x800421ccd6 0x40013b 0x4001bf 0x400229 0x400cca
 Translation of call stack:
-0x0000008004217e36: debug_panic (lib/kernel/debug.c:32)
-0x0000008004213442: disk_read (devices/disk.c:215)
-0x000000800421f768: inode_open (filesys/inode.c:128)
-0x000000800421edb6: dir_open_root (filesys/directory.c:49)
-0x000000800421d8d3: filesys_create (filesys/filesys.c:63)
-0x0000008004220204: fsutil_put (filesys/fsutil.c:107)
-0x00000080042068cc: run_actions (threads/init.c:297)
-0x0000008004206186: main (threads/init.c:125)
+0x0000008004217e49: debug_panic (lib/kernel/debug.c:32)
+0x000000800421cb37: kill (userprog/exception.c:103)
+0x0000008004208d26: intr_handler (threads/interrupt.c:352)
+0x0000008004209144: intr_entry (threads/intr-stubs.o:?)
+0x000000800421bba3: process_wait (userprog/process.c:328)
+0x000000800421d5c3: wait (userprog/syscall.c:283)
+0x000000800421ce80: syscall_handler (userprog/syscall.c:82)
+0x000000800421ccd6: no_sti (userprog/syscall-entry.o:?)
+0x000000000040013b: (unknown)
+0x00000000004001bf: (unknown)
+0x0000000000400229: (unknown)
+0x0000000000400cca: (unknown)

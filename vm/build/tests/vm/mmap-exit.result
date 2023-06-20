@@ -1,12 +1,2 @@
 FAIL
-Kernel panic in run: PANIC at ../../devices/disk.c:214 in disk_read(): assertion `d != NULL' failed.
-Call stack: 0x8004217e36 0x8004213442 0x800421f768 0x800421edb6 0x800421d8d3 0x8004220204 0x80042068cc 0x8004206186
-Translation of call stack:
-0x0000008004217e36: debug_panic (lib/kernel/debug.c:32)
-0x0000008004213442: disk_read (devices/disk.c:215)
-0x000000800421f768: inode_open (filesys/inode.c:128)
-0x000000800421edb6: dir_open_root (filesys/directory.c:49)
-0x000000800421d8d3: filesys_create (filesys/filesys.c:63)
-0x0000008004220204: fsutil_put (filesys/fsutil.c:107)
-0x00000080042068cc: run_actions (threads/init.c:297)
-0x0000008004206186: main (threads/init.c:125)
+run: wait for child (should return 0): FAILED
