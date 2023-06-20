@@ -37,7 +37,8 @@ page_get_type (struct page *page) {
 static struct frame *vm_get_victim (void);
 static bool vm_do_claim_page (struct page *page);
 static struct frame *vm_evict_frame (void);
-
+//! vm_type 관련 함수 구조체 설정
+typedef bool (*initializer) (struct page *, enum vm_type , void *);
 /* Create the pending page object with initializer. If you want to create a
  * page, do not create it directly and make it through this function or
  * `vm_alloc_page`. */
@@ -45,6 +46,8 @@ bool
 vm_alloc_page_with_initializer (enum vm_type type, void *upage, bool writable,
 		vm_initializer *init, void *aux) {
     //! upage = user virtual address
+    // vm_initializer는 load_segment에서 불리고 lazy_load_segment함수를 인자로 넣어줌
+    // vm_initializer = lazy_load_segment (process.c)
 	ASSERT (VM_TYPE(type) != VM_UNINIT)
 
 	struct supplemental_page_table *spt = &thread_current ()->spt;
@@ -58,14 +61,13 @@ vm_alloc_page_with_initializer (enum vm_type type, void *upage, bool writable,
         // upage에 페이지 할당이 안되있으므로 새 페이지 할당 및 uninit_new()를 통해 초기화
         struct page *p = (struct page *)malloc(sizeof(struct page));
         // initializer type 설정
-        typedef bool (*initializer) (struct page *, enum vm_type , void *);
         initializer which_initializer;
 
         switch (type) {
-            case VM_ANON:
+            case VM_ANON:  
                 which_initializer = anon_initializer;
                 break;
-            case VM_FILE:
+            case VM_FILE:  
                 which_initializer = file_backed_initializer;
                 break;
 	    }
@@ -73,8 +75,7 @@ vm_alloc_page_with_initializer (enum vm_type type, void *upage, bool writable,
         // page를 초기화했으므로 새로 만들었던 writable을 저장 (uninit_new뒤에 modifiy)
         p->writable = writable;
 		/* TODO: Insert the page into the spt. */
-        spt_insert_page(spt, p);
-        return true;
+        return spt_insert_page(spt, p);
 	}
 err:
 	return false;
@@ -213,7 +214,7 @@ vm_do_claim_page (struct page *page) {
 
 	/* TODO: Insert page table entry to map page's VA to frame's PA. */
     if (pml4_get_page(curr->pml4, page->va) == NULL && pml4_set_page(curr->pml4, page->va, frame->kva, page->writable))
-        return swap_in (page, frame->kva);
+        return swap_in (page, frame->kva); // swap_in은 bool 타입
     return false;
 }
 
@@ -237,12 +238,12 @@ supplemental_page_table_kill (struct supplemental_page_table *spt UNUSED) {
 }
 
 //! add function
-uint64_t hash_hash (const struct hash_elem *e, void *aux) {
+uint64_t hash_hash (const struct hash_elem *e, void *aux UNUSED) {
     struct page *current_page = hash_entry(e, struct page, page_elem);
-    return hash_bytes(&current_page->va, sizeof(&current_page->va));
+    return hash_bytes(&current_page->va, sizeof(current_page->va));
 }
 // a < b = true (va로)
-bool hash_less (const struct hash_elem *a, const struct hash_elem *b, void *aux) {
+bool hash_less (const struct hash_elem *a, const struct hash_elem *b, void *aux UNUSED) {
     struct page *page_a = hash_entry(a, struct page, page_elem);
     struct page *page_b = hash_entry(b, struct page, page_elem);
     return page_a->va < page_b->va;

@@ -826,6 +826,13 @@ lazy_load_segment(struct page *page, void *aux)
  *
  * Return true if successful, false if a memory allocation error
  * or disk read error occurs. */
+//! lazy_load_segment에서 사용할 정보 구조체, aux로 보냄
+struct segment_arg {
+    struct file *file;
+    off_t ofs;
+    uint32_t read_bytes;
+    uint32_t zero_bytes;
+};
 static bool
 load_segment(struct file *file, off_t ofs, uint8_t *upage,
 			 uint32_t read_bytes, uint32_t zero_bytes, bool writable)
@@ -843,15 +850,23 @@ load_segment(struct file *file, off_t ofs, uint8_t *upage,
 		size_t page_zero_bytes = PGSIZE - page_read_bytes;
 
 		/* TODO: Set up aux to pass information to the lazy_load_segment. */
-		void *aux = NULL;
+        //! aux는 load_segment에서 설정한 정보 (git book)
+        struct segment_arg *segment_arg = (struct segment_arg*)malloc(sizeof(segment_arg));
+        segment_arg->file = file;
+        segment_arg->ofs = ofs;
+        segment_arg->read_bytes = page_read_bytes;
+        segment_arg->zero_bytes = page_zero_bytes;
+
+		// void *aux = NULL;
 		if (!vm_alloc_page_with_initializer(VM_ANON, upage,
-											writable, lazy_load_segment, aux))
+											writable, lazy_load_segment, segment_arg))
 			return false;
 
 		/* Advance. */
 		read_bytes -= page_read_bytes;
 		zero_bytes -= page_zero_bytes;
 		upage += PGSIZE;
+        ofs += page_read_bytes;
 	}
 	return true;
 }
