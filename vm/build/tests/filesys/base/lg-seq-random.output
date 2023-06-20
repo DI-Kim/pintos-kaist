@@ -4,7 +4,7 @@ Kernel command line: -q -f put lg-seq-random run lg-seq-random
 Pintos booting with: 
 	base_mem: 0x0 ~ 0x9fc00 (Usable: 639 kB)
 	ext_mem: 0x100000 ~ 0x13e0000 (Usable: 19,328 kB)
-Calibrating timer...  26,188,800 loops/s.
+Calibrating timer...  85,094,400 loops/s.
 hd0:0: detected 321 sector (160 kB) disk, model "QEMU HARDDISK", serial "QM00001"
 hd0:1: detected 20,160 sector (9 MB) disk, model "QEMU HARDDISK", serial "QM00002"
 hd1:0: detected 107 sector (53 kB) disk, model "QEMU HARDDISK", serial "QM00003"
@@ -12,18 +12,16 @@ hd1:1: detected 8,064 sector (3 MB) disk, model "QEMU HARDDISK", serial "QM00004
 Formatting file system...done.
 Boot complete.
 Putting 'lg-seq-random' into the file system...
-Executing 'lg-seq-random':
-Kernel PANIC at ../../userprog/process.c:76 in initd(): Fail to launch initd
-
-Call stack: 0x8004217e36 0x800421b4ec 0x80042076c5.
+Kernel PANIC at ../../devices/disk.c:214 in disk_read(): assertion `d != NULL' failed.
+Call stack: 0x8004217e36 0x8004213442 0x800421f768 0x800421edb6 0x800421d8d3 0x8004220204 0x80042068cc 0x8004206186.
 The `backtrace' program can make call stacks useful.
 Read "Backtraces" in the "Debugging Tools" chapter
 of the Pintos documentation for more information.
-Timer: 57 ticks
-Thread: 30 idle ticks, 26 kernel ticks, 1 user ticks
+Timer: 54 ticks
+Thread: 30 idle ticks, 24 kernel ticks, 0 user ticks
 hd0:0: 0 reads, 0 writes
-hd0:1: 39 reads, 242 writes
-hd1:0: 107 reads, 0 writes
+hd0:1: 9 reads, 18 writes
+hd1:0: 1 reads, 0 writes
 hd1:1: 0 reads, 0 writes
-Console: 1158 characters output
+Console: 1201 characters output
 Key
