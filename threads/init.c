@@ -240,8 +240,8 @@ parse_options (char **argv) {
 static void
 run_task (char **argv) {
 	const char *task = argv[1];
-
 	printf ("Executing '%s':\n", task);
+    // printf("✅✅✅✅✅✅\n");
 #ifdef USERPROG
 	if (thread_tests){
 		run_test (task);
@@ -277,7 +277,6 @@ run_actions (char **argv) {
 #endif
 		{NULL, 0, NULL},
 	};
-
 	while (*argv != NULL) {
 		const struct action *a;
 		int i;
@@ -288,12 +287,12 @@ run_actions (char **argv) {
 				PANIC ("unknown action `%s' (use -h for help)", *argv);
 			else if (!strcmp (*argv, a->name))
 				break;
-
 		/* Check for required arguments. */
 		for (i = 1; i < a->argc; i++)
 			if (argv[i] == NULL)
 				PANIC ("action `%s' requires %d argument(s)", *argv, a->argc - 1);
 
+        
 		/* Invoke action and advance. */
 		a->function (argv);
 		argv += a->argc;

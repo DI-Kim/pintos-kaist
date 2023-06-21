@@ -69,7 +69,6 @@ initd(void *f_name)
 #ifdef VM
 	supplemental_page_table_init(&thread_current()->spt);
 #endif
-
 	process_init();
 
 	if (process_exec(f_name) < 0)
@@ -99,7 +98,7 @@ tid_t process_fork(const char *name, struct intr_frame *if_ UNUSED)
 	sema_down(&child->load_sema);
 
 	// 자식이 로드되다가 오류로 exit한 경우
-	if (child->exit_status == -2)
+	if (child->exit_status == TID_ERROR)
 	{
 		// 자식이 종료되었으므로 자식 리스트에서 제거한다.
 		// 이거 넣으면 간헐적으로 실패함 (syn-read)
@@ -218,7 +217,7 @@ __do_fork(void *aux)
 		do_iret(&if_);
 error:
 	sema_up(&current->load_sema);
-	exit(-2);
+	exit(TID_ERROR);
 }
 
 /* Switch the current execution context to the f_name.
@@ -227,7 +226,6 @@ int process_exec(void *f_name)
 { // 인자: 실행하려는 이진 파일의 이름
 	char *file_name = f_name;
 	bool success;
-
 	/* We cannot use the intr_frame in the thread structure.
 	 * This is because when current thread rescheduled,
 	 * it stores the execution information to the member. */
@@ -487,6 +485,7 @@ load(const char *file_name, struct intr_frame *if_)
 	off_t file_ofs;
 	bool success = false;
 	int i;
+    
 
 	/* Allocate and activate page directory. */
 	t->pml4 = pml4_create(); // 페이지 dir(페이지 테이블 포인터) 생성
@@ -803,6 +802,13 @@ install_page(void *upage, void *kpage, bool writable)
 /* From here, codes will be used after project 3.
  * If you want to implement the function for only project 2, implement it on the
  * upper block. */
+//! lazy_load_segment에서 사용할 정보 구조체, aux로 보냄
+struct segment_arg {
+    struct file *file;
+    off_t ofs;
+    uint32_t read_bytes;
+    uint32_t zero_bytes;
+};
 
 static bool
 lazy_load_segment(struct page *page, void *aux)
@@ -815,14 +821,17 @@ lazy_load_segment(struct page *page, void *aux)
     off_t offset = ((struct segment_arg *)aux)->ofs;
     uint32_t read_bytes = ((struct segment_arg *)aux)->read_bytes;
     uint32_t zero_bytes = ((struct segment_arg *)aux)->zero_bytes;
+    // struct segment_arg *segment = (struct segment_arg *)aux;
 
     file_seek(file, offset);
-
-    if (file_read(file, page->frame->kva, offset) != read_bytes) {
+    // file_read를 통해 file을 읽고, kva(buffer)에 저장, offset만큼 읽음
+    // return값으로 읽은 byte를 반환하기에 read_bytes만큼 못읽으면 false 를 리턴
+    // 리턴하기 전에 페이지할당을 해제
+    if (file_read(file, page->frame->kva, read_bytes) != read_bytes) {
         palloc_free_page(page->frame->kva);
         return false;
     }
-    
+    // kva의 남은 부분을 0으로 채움
     memset(page->frame->kva + read_bytes, 0, zero_bytes);
     return true;
 
@@ -842,13 +851,7 @@ lazy_load_segment(struct page *page, void *aux)
  *
  * Return true if successful, false if a memory allocation error
  * or disk read error occurs. */
-//! lazy_load_segment에서 사용할 정보 구조체, aux로 보냄
-struct segment_arg {
-    struct file *file;
-    off_t ofs;
-    uint32_t read_bytes;
-    uint32_t zero_bytes;
-};
+
 static bool
 load_segment(struct file *file, off_t ofs, uint8_t *upage,
 			 uint32_t read_bytes, uint32_t zero_bytes, bool writable)
@@ -856,7 +859,7 @@ load_segment(struct file *file, off_t ofs, uint8_t *upage,
 	ASSERT((read_bytes + zero_bytes) % PGSIZE == 0);
 	ASSERT(pg_ofs(upage) == 0);
 	ASSERT(ofs % PGSIZE == 0);
-
+    // printf("✅✅✅✅✅✅\n");
 	while (read_bytes > 0 || zero_bytes > 0)
 	{
 		/* Do calculate how to fill this page.
@@ -867,7 +870,7 @@ load_segment(struct file *file, off_t ofs, uint8_t *upage,
 
 		/* TODO: Set up aux to pass information to the lazy_load_segment. */
         //! aux는 load_segment에서 설정한 정보 (git book)
-        struct segment_arg *segment_arg = (struct segment_arg*)malloc(sizeof(segment_arg));
+        struct segment_arg *segment_arg = (struct segment_arg*)malloc(sizeof(struct segment_arg));
         segment_arg->file = file;
         segment_arg->ofs = ofs;
         segment_arg->read_bytes = page_read_bytes;
@@ -891,13 +894,25 @@ load_segment(struct file *file, off_t ofs, uint8_t *upage,
 static bool
 setup_stack(struct intr_frame *if_)
 {
+    // printf("✅✅✅✅✅✅");
 	bool success = false;
+    //! stack을 pgsize만큼 밑에서 위로 오
 	void *stack_bottom = (void *)(((uint8_t *)USER_STACK) - PGSIZE);
 
 	/* TODO: Map the stack on stack_bottom and claim the page immediately.
 	 * TODO: If success, set the rsp accordingly.
 	 * TODO: You should mark the page is stack. */
 	/* TODO: Your code goes here */
+    // claim, vm_alloc_page_with_initializer 이용해서 구현
+
+    // if(!vm_alloc_page(VM_ANON, stack_bottom, true))
+    if(!vm_alloc_page(VM_ANON | VM_MARKER_0, stack_bottom, true))
+        return success;
+
+    success = vm_claim_page(stack_bottom);
+
+    if (success)
+        if_->rsp = USER_STACK;
 
 	return success;
 }

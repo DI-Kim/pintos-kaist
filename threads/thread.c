@@ -314,7 +314,7 @@ void thread_yield(void)
 	old_level = intr_disable(); // 인터럽트 비활성
 	if (curr != idle_thread)
 		list_insert_ordered(&ready_list, &curr->elem, cmp_thread_priority, NULL);
-	do_schedule(THREAD_READY); // 현재 실행 중인 스레드의 상태를 준비 상태로 변경, 컨텍스트 전환
+    do_schedule(THREAD_READY); // 현재 실행 중인 스레드의 상태를 준비 상태로 변경, 컨텍스트 전환
 	intr_set_level(old_level); // 인터럽트 상태를 원래 상태로 변경
 }
 
@@ -397,7 +397,7 @@ void preempt_priority(void)
 		return;
 	struct thread *curr = thread_current();
 	struct thread *ready = list_entry(list_front(&ready_list), struct thread, elem);
-	if (curr->priority < ready->priority) // ready_list에 현재 실행중인 스레드보다 우선순위가 높은 스레드가 있으면
+	if (!intr_context() && curr->priority < ready->priority) // ready_list에 현재 실행중인 스레드보다 우선순위가 높은 스레드가 있으면
 		thread_yield();
 }
 

@@ -15,6 +15,7 @@
         "uninit.h": "c",
         "process.h": "c",
         "thread.h": "c",
-        "hash.h": "c"
+        "hash.h": "c",
+        "vaddr.h": "c"
     }
 }

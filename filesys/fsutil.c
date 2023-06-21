@@ -77,7 +77,6 @@ fsutil_rm (char **argv) {
 void
 fsutil_put (char **argv) {
 	static disk_sector_t sector = 0;
-
 	const char *file_name = argv[1];
 	struct disk *src;
 	struct file *dst;

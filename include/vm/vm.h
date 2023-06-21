@@ -2,7 +2,7 @@
 #define VM_VM_H
 #include <stdbool.h>
 #include "threads/palloc.h"
-#include "lib/kernel/hash.h"
+#include "hash.h"
 #include "threads/vaddr.h"
 // #include "userprog/process.h"
 
@@ -65,8 +65,7 @@ struct page {
 	};
 };
 
-//! frame table 생성
-struct list *frame_table;  
+
 /* The representation of "frame" */
 struct frame {
 	void *kva; // 커널 가상 주소
@@ -124,4 +123,5 @@ enum vm_type page_get_type (struct page *page);
 uint64_t hash_hash (const struct hash_elem *e, void *aux);
 bool hash_less (const struct hash_elem *a, const struct hash_elem *b, void *aux);
 static struct frame * vm_get_frame (void);
+void spt_destructor (struct hash_elem *hash_e, void *aux);
 #endif  /* VM_VM_H */

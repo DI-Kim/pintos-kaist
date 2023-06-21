@@ -224,7 +224,7 @@ vm_dealloc_page (struct page *page) {
 bool
 vm_claim_page (void *va) {
 	struct page *page = NULL;
-    // aisdhfiusdhalifhsadilf	
+    
     page = spt_find_page(&thread_current()->spt, va);
     if (page == NULL)
         return false;
