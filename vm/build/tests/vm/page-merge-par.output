@@ -32,11 +32,11 @@ child-sort: exit(123)
 (page-merge-par) sort chunk 7
 child-sort: exit(123)
 (page-merge-par) wait for child 0
+child-sort: exit(123)
 (page-merge-par) wait for child 1
 (page-merge-par) wait for child 2
 (page-merge-par) wait for child 3
 (page-merge-par) wait for child 4
-child-sort: exit(123)
 (page-merge-par) wait for child 5
 (page-merge-par) wait for child 6
 (page-merge-par) wait for child 7
@@ -46,10 +46,10 @@ child-sort: exit(123)
 (page-merge-par) end
 page-merge-par: exit(0)
 Execution of 'page-merge-par' complete.
-Timer: 315 ticks
-Thread: 30 idle ticks, 48 kernel ticks, 237 user ticks
+Timer: 320 ticks
+Thread: 30 idle ticks, 53 kernel ticks, 237 user ticks
 hd0:0: 0 reads, 0 writes
-hd0:1: 4870 reads, 6714 writes
+hd0:1: 4871 reads, 6714 writes
 hd1:0: 218 reads, 0 writes
 hd1:1: 0 reads, 0 writes
 Console: 1856 characters output

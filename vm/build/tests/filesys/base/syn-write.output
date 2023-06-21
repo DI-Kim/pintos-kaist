@@ -51,13 +51,13 @@ child-syn-wrt: exit(9)
 (syn-write) end
 syn-write: exit(0)
 Execution of 'syn-write' complete.
-Timer: 98 ticks
-Thread: 30 idle ticks, 39 kernel ticks, 30 user ticks
+Timer: 103 ticks
+Thread: 30 idle ticks, 40 kernel ticks, 33 user ticks
 hd0:0: 0 reads, 0 writes
 hd0:1: 676 reads, 522 writes
 hd1:0: 226 reads, 0 writes
 hd1:1: 0 reads, 0 writes
-Console: 2415 characters output
+Console: 2416 characters output
 Keyboard: 0 keys pressed
 Exception: 0 page faults
 Powering off...

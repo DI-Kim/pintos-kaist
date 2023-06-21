@@ -25,24 +25,31 @@ child-qsort-mm: exit(-1)
 (page-merge-mm) sort chunk 3
 child-qsort-mm: exit(-1)
 (page-merge-mm) sort chunk 4
-child-qsort-mm: exit(-1)
 (page-merge-mm) sort chunk 5
-child-qsort-mm: exit(-1)
+(child-qsort-mm) open "buf4": FAILED
+child-qsort-mm: exit(1)
 (page-merge-mm) sort chunk 6
+(child-qsort-mm) open "buf5": FAILED
+child-qsort-mm: exit(1)
 child-qsort-mm: exit(-1)
 (page-merge-mm) sort chunk 7
 child-qsort-mm: exit(-1)
 (page-merge-mm) wait for child 0
-(page-merge-mm) wait for child 0: FAILED
-page-merge-mm: exit(1)
-Execution of 'page-merge-mm' complete.
-Timer: 221 ticks
-Thread: 30 idle ticks, 47 kernel ticks, 145 user ticks
+Kernel PANIC at ../../lib/kernel/list.c:78 in list_next(): assertion `is_head (elem) || is_interior (elem)' failed.
+Call stack: 0x8004217e49 0x80042180c5 0x800421c323 0x800421bba3 0x800421d5e4 0x800421cea1 0x800421ccd6 0x400463 0x4007f7 0x400107 0x401504 0x40154d 0Interrupt 0x0d (#GP General Protection Exception) at rip=8004214e83
+ cr2=0000000010000000 error=               0
+rax 0000800421a44400 rbx 00008004245f1800 rcx 00000080040b8000 rdx 00000000000003d4
+rsp 0000008004242dc0 rbp 0000008004242dd0 rsi 000000000000c50f rdi 0000000000000000
+rip 0000008004214e83 r8 0000008004242cd8  r9 000000800421b2c2 r10 0000000000000000
+r11 0000000000000212 r12 000000800421cdad r13 0000010424200000 r14 0000800424204800
+r15 00008004229dd800 rflags 00000006
+es: 001b ds: 001b cs: 0008 ss: 0010
+Kernel PANIC recursion at ../../userprog/exception.c:97 in kill().
+Timer: 223 ticks
+Thread: 30 idle ticks, 46 kernel ticks, 147 user ticks
 hd0:0: 0 reads, 0 writes
-hd0:1: 724 reads, 4678 writes
+hd0:1: 737 reads, 4678 writes
 hd1:0: 224 reads, 0 writes
 hd1:1: 0 reads, 0 writes
-Console: 1561 characters output
-Keyboard: 0 keys pressed
-Exception: 8 page faults
-Powering off...
+Console: 2383 characters output
+Key
