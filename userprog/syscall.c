@@ -63,6 +63,7 @@ void syscall_init(void)
 /* The main system call interface */
 void syscall_handler(struct intr_frame *f UNUSED)
 {
+    thread_current()->rsp_ = f->rsp;
 	int syscall_n = f->R.rax; /* 시스템 콜 넘버 */
 	switch (syscall_n)
 	{

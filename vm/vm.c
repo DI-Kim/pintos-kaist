@@ -1,3 +1,144 @@
+// pass tests/userprog/args-none
+// pass tests/userprog/args-single
+// pass tests/userprog/args-multiple
+// pass tests/userprog/args-many
+// pass tests/userprog/args-dbl-space
+// pass tests/userprog/halt
+// pass tests/userprog/exit
+// pass tests/userprog/create-normal
+// pass tests/userprog/create-empty
+// pass tests/userprog/create-null
+// pass tests/userprog/create-bad-ptr
+// pass tests/userprog/create-long
+// pass tests/userprog/create-exists
+// pass tests/userprog/create-bound
+// pass tests/userprog/open-normal
+// pass tests/userprog/open-missing
+// pass tests/userprog/open-boundary
+// pass tests/userprog/open-empty
+// pass tests/userprog/open-null
+// pass tests/userprog/open-bad-ptr
+// pass tests/userprog/open-twice
+// pass tests/userprog/close-normal
+// pass tests/userprog/close-twice
+// pass tests/userprog/close-bad-fd
+// pass tests/userprog/read-normal
+// pass tests/userprog/read-bad-ptr
+// pass tests/userprog/read-boundary
+// pass tests/userprog/read-zero
+// pass tests/userprog/read-stdout
+// pass tests/userprog/read-bad-fd
+// pass tests/userprog/write-normal
+// pass tests/userprog/write-bad-ptr
+// pass tests/userprog/write-boundary
+// pass tests/userprog/write-zero
+// pass tests/userprog/write-stdin
+// pass tests/userprog/write-bad-fd
+// pass tests/userprog/fork-once
+// pass tests/userprog/fork-multiple
+// pass tests/userprog/fork-recursive
+// pass tests/userprog/fork-read
+// pass tests/userprog/fork-close
+// pass tests/userprog/fork-boundary
+// pass tests/userprog/exec-once
+// pass tests/userprog/exec-arg
+// pass tests/userprog/exec-boundary
+// pass tests/userprog/exec-missing
+// pass tests/userprog/exec-bad-ptr
+// pass tests/userprog/exec-read
+// pass tests/userprog/wait-simple
+// pass tests/userprog/wait-twice
+// pass tests/userprog/wait-killed
+// pass tests/userprog/wait-bad-pid
+// pass tests/userprog/multi-recurse
+// pass tests/userprog/multi-child-fd
+// pass tests/userprog/rox-simple
+// pass tests/userprog/rox-child
+// pass tests/userprog/rox-multichild
+// pass tests/userprog/bad-read
+// pass tests/userprog/bad-write
+// pass tests/userprog/bad-read2
+// pass tests/userprog/bad-write2
+// pass tests/userprog/bad-jump
+// pass tests/userprog/bad-jump2
+// FAIL tests/vm/pt-grow-stack
+// pass tests/vm/pt-grow-bad
+// FAIL tests/vm/pt-big-stk-obj
+// pass tests/vm/pt-bad-addr
+// pass tests/vm/pt-bad-read
+// pass tests/vm/pt-write-code
+// FAIL tests/vm/pt-write-code2
+// FAIL tests/vm/pt-grow-stk-sc
+// pass tests/vm/page-linear
+// pass tests/vm/page-parallel
+// pass tests/vm/page-merge-seq
+// pass tests/vm/page-merge-par
+// FAIL tests/vm/page-merge-stk
+// FAIL tests/vm/page-merge-mm
+// pass tests/vm/page-shuffle
+// FAIL tests/vm/mmap-read
+// FAIL tests/vm/mmap-close
+// FAIL tests/vm/mmap-unmap
+// FAIL tests/vm/mmap-overlap
+// FAIL tests/vm/mmap-twice
+// FAIL tests/vm/mmap-write
+// pass tests/vm/mmap-ro
+// FAIL tests/vm/mmap-exit
+// FAIL tests/vm/mmap-shuffle
+// FAIL tests/vm/mmap-bad-fd
+// FAIL tests/vm/mmap-clean
+// FAIL tests/vm/mmap-inherit
+// FAIL tests/vm/mmap-misalign
+// FAIL tests/vm/mmap-null
+// FAIL tests/vm/mmap-over-code
+// FAIL tests/vm/mmap-over-data
+// FAIL tests/vm/mmap-over-stk
+// FAIL tests/vm/mmap-remove
+// pass tests/vm/mmap-zero
+// FAIL tests/vm/mmap-bad-fd2
+// FAIL tests/vm/mmap-bad-fd3
+// FAIL tests/vm/mmap-zero-len
+// FAIL tests/vm/mmap-off
+// FAIL tests/vm/mmap-bad-off
+// FAIL tests/vm/mmap-kernel
+// FAIL tests/vm/lazy-file
+// pass tests/vm/lazy-anon
+// FAIL tests/vm/swap-file
+// FAIL tests/vm/swap-anon
+// FAIL tests/vm/swap-iter
+// pass tests/vm/swap-fork
+// pass tests/filesys/base/lg-create
+// pass tests/filesys/base/lg-full
+// pass tests/filesys/base/lg-random
+// pass tests/filesys/base/lg-seq-block
+// pass tests/filesys/base/lg-seq-random
+// pass tests/filesys/base/sm-create
+// pass tests/filesys/base/sm-full
+// pass tests/filesys/base/sm-random
+// pass tests/filesys/base/sm-seq-block
+// pass tests/filesys/base/sm-seq-random
+// pass tests/filesys/base/syn-read
+// pass tests/filesys/base/syn-remove
+// pass tests/filesys/base/syn-write
+// pass tests/threads/alarm-single
+// pass tests/threads/alarm-multiple
+// pass tests/threads/alarm-simultaneous
+// pass tests/threads/alarm-priority
+// pass tests/threads/alarm-zero
+// pass tests/threads/alarm-negative
+// pass tests/threads/priority-change
+// pass tests/threads/priority-donate-one
+// pass tests/threads/priority-donate-multiple
+// pass tests/threads/priority-donate-multiple2
+// pass tests/threads/priority-donate-nest
+// pass tests/threads/priority-donate-sema
+// pass tests/threads/priority-donate-lower
+// pass tests/threads/priority-fifo
+// pass tests/threads/priority-preempt
+// pass tests/threads/priority-sema
+// pass tests/threads/priority-condvar
+// pass tests/threads/priority-donate-chain
+// FAIL tests/vm/cow/cow-simple
 /* vm.c: Generic interface for virtual memory objects. */
 
 #include "threads/malloc.h"
@@ -5,6 +146,7 @@
 #include "vm/vm.h"
 #include "vm/inspect.h"
 #include "threads/mmu.h"
+#include "threads/interrupt.h"
 //! frame table 생성
 struct list *frame_table;
 
@@ -186,10 +328,12 @@ vm_handle_wp (struct page *page UNUSED) {
 
 /* Return true on success */
 bool
-vm_try_handle_fault (struct intr_frame *f UNUSED, void *addr,
-		bool user UNUSED, bool write, bool not_present) {
-	struct supplemental_page_table *spt = &thread_current ()->spt;
+vm_try_handle_fault (struct intr_frame *f, void *addr,
+		bool user, bool write, bool not_present) {
+    struct thread *curr = thread_current();
+	struct supplemental_page_table *spt = &curr->spt;
 	struct page *page = NULL;
+    uintptr_t rsp_ = NULL;
 	/* TODO: Validate the fault */
 	/* TODO: Your code goes here */
     // fault난 주소에 해당하는 struct page가 spt_find_page를 통해, spt를 참조하라.
@@ -201,7 +345,18 @@ vm_try_handle_fault (struct intr_frame *f UNUSED, void *addr,
 
     if (not_present) // 접근한 메모리의 physical page가 존재하지 않은 경우
     {
-        /* TODO: Validate the fault */
+        // user mode 혹은 kernel mode 구별 (syscall.c에 thread->rsp 작성함)
+        rsp_ = f->rsp;
+        if (!user) {
+            rsp_ = curr->rsp_;
+        }
+        // addr이 유저스택 최대 크기 1MB 안으로 들어오는지  
+        if (addr > USER_STACK && addr <= (USER_STACK - (1<<20)))
+            return false;
+        if (addr - 8 == rsp_ || addr >= rsp_)
+            vm_stack_growth(addr);
+        
+
         page = spt_find_page(spt, addr);
         if (!page)
             return false;
@@ -224,7 +379,7 @@ vm_dealloc_page (struct page *page) {
 bool
 vm_claim_page (void *va) {
 	struct page *page = NULL;
-    
+
     page = spt_find_page(&thread_current()->spt, va);
     if (page == NULL)
         return false;

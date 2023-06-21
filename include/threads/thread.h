@@ -120,6 +120,7 @@ struct thread
     struct semaphore wait_sema;
 
     struct file *running;
+    uintptr_t rsp_;
 
 #ifdef USERPROG
 	/* Owned by userprog/process.c. */
