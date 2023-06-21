@@ -27,22 +27,30 @@ child-qsort: exit(-1)
 (page-merge-stk) sort chunk 4
 child-qsort: exit(-1)
 (page-merge-stk) sort chunk 5
-child-qsort: exit(-1)
 (page-merge-stk) sort chunk 6
-child-qsort: exit(-1)
-(page-merge-stk) sort chunk 7
-child-qsort: exit(-1)
-(page-merge-stk) wait for child 0
-(page-merge-stk) wait for child 0: FAILED
-page-merge-stk: exit(1)
-Execution of 'page-merge-stk' complete.
-Timer: 139 ticks
-Thread: 30 idle ticks, 39 kernel ticks, 70 user ticks
+Interrupt 0x0d (#GP General Protection Exception) at rip=800421c303
+ cr2=000000004745ff8c error=               0
+rax cccccccccccccb5c rbx 00008004245f1800 rcx 000000800426c028 rdx 000000000000001f
+rsp 0000008004242e70 rbp 0000008004242ea0 rsi 000000800426c028 rdi 0000008004242150
+rip 000000800421c303 r8 0000000000000000  r9 0000000000000000 r10 0000000000000000
+r11 0000000000000212 r12 000000800421cdad r13 0000010424200000 r14 0000800424204800
+r15 00008004229dd800 rflags 00000296
+es: 001b ds: 001b cs: 0008 ss: 0010
+Kernel PANIC at ../../userprog/exception.c:97 in kill(): Kernel bug - unexpected interrupt in kernel
+Call stack: 0x8004217e49 0x800421cb37 0x8004208d26 0x8004209144 0x800421b5c4 0x800421d509 0x800421ce33 0x800421ccd6 0x400374 0x4007f7 0x400107 0x401504 0x40154d 0Interrupt 0x0d (#GP General Protection Exception) at rip=8004214e83
+ cr2=000000004745ff8c error=               0
+rax 0000800421a44400 rbx 00008004245f1800 rcx 00000080040b8000 rdx 00000000000003d4
+rsp 0000008004242cb0 rbp 0000008004242cc0 rsi 000000000000820f rdi 0000000000000000
+rip 0000008004214e83 r8 0000008004242bc8  r9 000000800421b2c2 r10 0000000000000000
+r11 0000000000000212 r12 000000800421cdad r13 0000010424200000 r14 0000800424204800
+r15 00008004229dd800 rflags 00000006
+es: 0010 ds: 0010 cs: 0008 ss: 0010
+Kernel PANIC recursion at ../../userprog/exception.c:97 in kill().
+Timer: 196 ticks
+Thread: 30 idle ticks, 41 kernel ticks, 125 user ticks
 hd0:0: 0 reads, 0 writes
-hd0:1: 391 reads, 4678 writes
+hd0:1: 493 reads, 4154 writes
 hd1:0: 224 reads, 0 writes
 hd1:1: 0 reads, 0 writes
-Console: 1548 characters output
-Keyboard: 0 keys pressed
-Exception: 0 page faults
-Powering off...
+Console: 2685 characters output
+Key
