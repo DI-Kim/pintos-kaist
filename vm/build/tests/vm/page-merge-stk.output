@@ -23,8 +23,8 @@ child-qsort: exit(-1)
 (page-merge-stk) sort chunk 2
 child-qsort: exit(-1)
 (page-merge-stk) sort chunk 3
-child-qsort: exit(-1)
 (page-merge-stk) sort chunk 4
+child-qsort: exit(-1)
 child-qsort: exit(-1)
 (page-merge-stk) sort chunk 5
 child-qsort: exit(-1)
@@ -51,8 +51,8 @@ r11 0000000000000212 r12 000000800421cdad r13 0000010424200000 r14 0000800424204
 r15 00008004229dd800 rflags 00000006
 es: 0010 ds: 0010 cs: 0008 ss: 0010
 Kernel PANIC recursion at ../../userprog/exception.c:97 in kill().
-Timer: 233 ticks
-Thread: 30 idle ticks, 46 kernel ticks, 157 user ticks
+Timer: 221 ticks
+Thread: 30 idle ticks, 44 kernel ticks, 147 user ticks
 hd0:0: 0 reads, 0 writes
 hd0:1: 583 reads, 4678 writes
 hd1:0: 224 reads, 0 writes
