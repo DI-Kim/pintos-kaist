@@ -137,10 +137,10 @@ void exit(int status)
 
 bool create(const char *file, unsigned initial_size)
 {
-    lock_acquire(&filesys_lock);
+    // lock_acquire(&filesys_lock);
 	check_address(file);
 	bool success = filesys_create(file, initial_size);
-	lock_release(&filesys_lock);
+	// lock_release(&filesys_lock);
 	return success;
 }
 

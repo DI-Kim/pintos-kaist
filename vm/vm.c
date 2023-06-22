@@ -348,21 +348,17 @@ vm_try_handle_fault (struct intr_frame *f, void *addr,
     if (not_present) // 접근한 메모리의 physical page가 존재하지 않은 경우
     {
         // user mode 혹은 kernel mode 구별 (syscall.c에 thread->rsp 작성함)
+        rsp_ = f->rsp;
         if (!user) {
             rsp_ = curr->rsp_;
         }
-        rsp_ = f->rsp;
         // addr이 유저스택 최대 크기 1MB 안으로 들어오는지
-        if (addr <= USER_STACK && addr >= (USER_STACK - (1<<20))) {
-            if (rsp_ - 8 >= USER_STACK - (1<<20)) {
-                if (addr == rsp_ - 8 || addr >= rsp_)
-                    vm_stack_growth(addr);
-            }
+        if (addr <= USER_STACK && addr > USER_STACK_BOTTOM) {
+            if (rsp_ - 8 > USER_STACK_BOTTOM && addr == rsp_ - 8)
+                vm_stack_growth(addr);
+            else if (rsp_ > USER_STACK_BOTTOM && addr >= rsp_)
+                vm_stack_growth(addr);
         }
-        // if (USER_STACK - (1 << 20) <= rsp_ - 8 && rsp_ - 8 == addr && addr <= USER_STACK)
-        //     vm_stack_growth(addr);
-        // else if (USER_STACK - (1 << 20) <= rsp_ && rsp_ <= addr && addr <= USER_STACK)
-        //     vm_stack_growth(addr);
 
         page = spt_find_page(spt, addr);
         if (!page)
