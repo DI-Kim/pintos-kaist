@@ -63,12 +63,12 @@
 // pass tests/userprog/bad-jump2
 // FAIL tests/vm/pt-grow-stack
 // pass tests/vm/pt-grow-bad
-// FAIL tests/vm/pt-big-stk-obj
+// pass tests/vm/pt-big-stk-obj
 // pass tests/vm/pt-bad-addr
 // pass tests/vm/pt-bad-read
 // pass tests/vm/pt-write-code
-// FAIL tests/vm/pt-write-code2
-// FAIL tests/vm/pt-grow-stk-sc
+// pass tests/vm/pt-write-code2
+// pass tests/vm/pt-grow-stk-sc
 // pass tests/vm/page-linear
 // pass tests/vm/page-parallel
 // pass tests/vm/page-merge-seq
@@ -139,6 +139,7 @@
 // pass tests/threads/priority-condvar
 // pass tests/threads/priority-donate-chain
 // FAIL tests/vm/cow/cow-simple
+// 30 / 141
 /* vm.c: Generic interface for virtual memory objects. */
 
 #include "threads/malloc.h"
@@ -318,7 +319,8 @@ vm_get_frame (void) {
 
 /* Growing the stack. */
 static void
-vm_stack_growth (void *addr UNUSED) {
+vm_stack_growth (void *addr) {
+    vm_alloc_page(VM_ANON | VM_MARKER_0, pg_round_down(addr), true);
 }
 
 /* Handle the fault on write_protected page */
@@ -350,12 +352,17 @@ vm_try_handle_fault (struct intr_frame *f, void *addr,
         if (!user) {
             rsp_ = curr->rsp_;
         }
-        // addr이 유저스택 최대 크기 1MB 안으로 들어오는지  
-        if (addr > USER_STACK && addr <= (USER_STACK - (1<<20)))
-            return false;
-        if (addr - 8 == rsp_ || addr >= rsp_)
-            vm_stack_growth(addr);
-        
+        // addr이 유저스택 최대 크기 1MB 안으로 들어오는지
+        if (addr <= USER_STACK && addr >= (USER_STACK - (1<<20))) {
+            if (rsp_ - 8 >= USER_STACK - (1<<20)) {
+                if (addr == rsp_ - 8 || addr >= rsp_)
+                    vm_stack_growth(addr);
+            }
+        }
+        // if (USER_STACK - (1 << 20) <= rsp_ - 8 && rsp_ - 8 == addr && addr <= USER_STACK)
+        //     vm_stack_growth(addr);
+        // else if (USER_STACK - (1 << 20) <= rsp_ && rsp_ <= addr && addr <= USER_STACK)
+        //     vm_stack_growth(addr);
 
         page = spt_find_page(spt, addr);
         if (!page)

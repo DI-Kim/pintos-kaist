@@ -63,8 +63,9 @@ void syscall_init(void)
 /* The main system call interface */
 void syscall_handler(struct intr_frame *f UNUSED)
 {
-    thread_current()->rsp_ = f->rsp;
 	int syscall_n = f->R.rax; /* 시스템 콜 넘버 */
+    thread_current()->rsp_ = f->rsp;
+    
 	switch (syscall_n)
 	{
 	case SYS_HALT:
@@ -136,8 +137,11 @@ void exit(int status)
 
 bool create(const char *file, unsigned initial_size)
 {
+    lock_acquire(&filesys_lock);
 	check_address(file);
-	return filesys_create(file, initial_size);
+	bool success = filesys_create(file, initial_size);
+	lock_release(&filesys_lock);
+	return success;
 }
 
 bool remove(const char *file)
@@ -149,12 +153,16 @@ bool remove(const char *file)
 int open(const char *file_name)
 {
 	check_address(file_name);
+
+	// lock_acquire(&filesys_lock);
 	struct file *file = filesys_open(file_name);
 	if (file == NULL)
+		// lock_release(&filesys_lock);
 		return -1;
 	int fd = process_add_file(file);
 	if (fd == -1)
 		file_close(file);
+    // lock_release(&filesys_lock);
 	return fd;
 }
 
@@ -198,8 +206,7 @@ int read(int fd, void *buffer, unsigned size)
 	int bytes_read = 0;
 
 	lock_acquire(&filesys_lock);
-	if (fd == STDIN_FILENO)
-	{
+	if (fd == STDIN_FILENO) {
 		for (int i = 0; i < size; i++)
 		{
 			*ptr++ = input_getc();
@@ -207,21 +214,23 @@ int read(int fd, void *buffer, unsigned size)
 		}
 		lock_release(&filesys_lock);
 	}
-	else
-	{
+	else {
 		if (fd < 2)
 		{
-
 			lock_release(&filesys_lock);
 			return -1;
 		}
 		struct file *file = process_get_file(fd);
 		if (file == NULL)
 		{
-
 			lock_release(&filesys_lock);
 			return -1;
 		}
+        struct page *p = spt_find_page(&thread_current()->spt, buffer);
+        if (p && !(p->writable)) {
+            lock_release(&filesys_lock);
+            exit(-1);
+        }
 		bytes_read = file_read(file, buffer, size);
 		lock_release(&filesys_lock);
 	}

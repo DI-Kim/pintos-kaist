@@ -120,7 +120,6 @@ struct thread
     struct semaphore wait_sema;
 
     struct file *running;
-    uintptr_t rsp_;
 
 #ifdef USERPROG
 	/* Owned by userprog/process.c. */
@@ -129,6 +128,7 @@ struct thread
 #ifdef VM
 	/* Table for whole virtual memory owned by thread. */
 	struct supplemental_page_table spt;
+    uintptr_t *rsp_;
 #endif
 
 	/* Owned by thread.c. */
