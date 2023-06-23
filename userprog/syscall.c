@@ -32,6 +32,8 @@ void close(int fd);
 tid_t fork(const char *thread_name, struct intr_frame *f);
 int exec(const char *cmd_line);
 int wait(int pid);
+void *mmap (void *addr, size_t length, int writable, int fd, off_t offset);
+void munmap (void *addr);
 
 /* System call.
  *
@@ -109,6 +111,12 @@ void syscall_handler(struct intr_frame *f UNUSED)
 		break;
 	case SYS_CLOSE:
 		close(f->R.rdi);
+        break;
+    case SYS_MMAP:
+        f->R.rax = mmap(f->R.rdi, f->R.rsi, f->R.rdx, f->R.r10, f->R.r8);
+        break;
+    case SYS_MUNMAP:
+        munmap(f->R.rdi);
 	}
 }
 
@@ -265,8 +273,7 @@ tid_t fork(const char *thread_name, struct intr_frame *f)
 	return process_fork(thread_name, f);
 }
 
-int exec(const char *cmd_line)
-{
+int exec(const char *cmd_line) {
 	check_address(cmd_line);
 
 	// process.c 파일의 process_create_initd 함수와 유사하다.
@@ -287,7 +294,35 @@ int exec(const char *cmd_line)
 		exit(-1); // 실패 시 status -1로 종료한다.
 }
 
-int wait(int pid)
-{
+int wait(int pid) {
 	return process_wait(pid);
+}
+
+void *mmap (void *addr, size_t length, int writable, int fd, off_t offset) {
+    // mmap에서 진행할 검증 하기
+    // fd -> file
+    struct file *file = process_get_file(fd);
+    if (!file)
+        return NULL;
+    if (length <= 0 || file_length(file))
+        return NULL;
+    if (offset % PGSIZE == 0 )
+        return NULL;
+    if (fd == 0 || fd == 1)
+        return NULL;
+
+    uint64_t page_start_point = pg_round_down(addr);
+    if (addr == NULL || page_start_point % PGSIZE == 0)
+        return NULL;
+    if (is_kernel_vaddr(addr + length) || is_kernel_vaddr(addr))
+        return NULL;
+
+    struct page *p = spt_find_page(&thread_current()->spt, page_start_point);
+    if (p)
+        return NULL;
+
+    return do_mmap(addr, length, writable, file, offset);
+}
+void munmap (void *addr) {
+    do_munmap(addr);
 }

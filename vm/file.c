@@ -51,6 +51,26 @@ file_backed_destroy (struct page *page) {
 void *
 do_mmap (void *addr, size_t length, int writable,
 		struct file *file, off_t offset) {
+    // 예상치 못한 close 방지용으로 복사 후 사용
+    struct file *f = file_reopen(file);
+    while (length > 0)
+	{
+		/* Do calculate how to fill this page.
+		 * We will read PAGE_length bytes from FILE
+		 * and zero the final PAGE_ZERO_BYTES bytes. */
+		size_t page_length = length < PGSIZE ? length : PGSIZE;
+		size_t page_zero_bytes = PGSIZE - page_length;
+
+
+		if (!vm_alloc_page_with_initializer(VM_FILE, addr, writable, NULL, NULL))
+			return false;
+
+		/* Advance. */
+		length -= page_length;
+		addr += PGSIZE;
+        offset += page_length;
+	}
+	return true;
 }
 
 /* Do the munmap */

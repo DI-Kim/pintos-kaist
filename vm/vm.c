@@ -82,25 +82,25 @@
 // FAIL tests/vm/mmap-overlap
 // FAIL tests/vm/mmap-twice
 // FAIL tests/vm/mmap-write
-// pass tests/vm/mmap-ro
+// FAIL tests/vm/mmap-ro
 // FAIL tests/vm/mmap-exit
 // FAIL tests/vm/mmap-shuffle
-// FAIL tests/vm/mmap-bad-fd
+// pass tests/vm/mmap-bad-fd
 // FAIL tests/vm/mmap-clean
 // FAIL tests/vm/mmap-inherit
-// FAIL tests/vm/mmap-misalign
-// FAIL tests/vm/mmap-null
-// FAIL tests/vm/mmap-over-code
-// FAIL tests/vm/mmap-over-data
-// FAIL tests/vm/mmap-over-stk
+// pass tests/vm/mmap-misalign
+// pass tests/vm/mmap-null
+// pass tests/vm/mmap-over-code
+// pass tests/vm/mmap-over-data
+// pass tests/vm/mmap-over-stk
 // FAIL tests/vm/mmap-remove
 // pass tests/vm/mmap-zero
-// FAIL tests/vm/mmap-bad-fd2
-// FAIL tests/vm/mmap-bad-fd3
-// FAIL tests/vm/mmap-zero-len
+// pass tests/vm/mmap-bad-fd2
+// pass tests/vm/mmap-bad-fd3
+// pass tests/vm/mmap-zero-len
 // FAIL tests/vm/mmap-off
-// FAIL tests/vm/mmap-bad-off
-// FAIL tests/vm/mmap-kernel
+// pass tests/vm/mmap-bad-off
+// pass tests/vm/mmap-kernel
 // FAIL tests/vm/lazy-file
 // pass tests/vm/lazy-anon
 // FAIL tests/vm/swap-file
@@ -117,7 +117,7 @@
 // pass tests/filesys/base/sm-random
 // pass tests/filesys/base/sm-seq-block
 // pass tests/filesys/base/sm-seq-random
-// pass tests/filesys/base/syn-read
+// FAIL tests/filesys/base/syn-read
 // pass tests/filesys/base/syn-remove
 // pass tests/filesys/base/syn-write
 // pass tests/threads/alarm-single
@@ -139,7 +139,7 @@
 // pass tests/threads/priority-condvar
 // pass tests/threads/priority-donate-chain
 // FAIL tests/vm/cow/cow-simple
-// 30 / 141
+// 21 / 141
 /* vm.c: Generic interface for virtual memory objects. */
 
 #include "threads/malloc.h"
