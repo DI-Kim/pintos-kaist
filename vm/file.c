@@ -1,6 +1,7 @@
 /* file.c: Implementation of memory backed file object (mmaped object). */
 
 #include "vm/vm.h"
+#include "userprog/process.h"
 
 static bool file_backed_swap_in (struct page *page, void *kva);
 static bool file_backed_swap_out (struct page *page);
@@ -53,22 +54,35 @@ do_mmap (void *addr, size_t length, int writable,
 		struct file *file, off_t offset) {
     // 예상치 못한 close 방지용으로 복사 후 사용
     struct file *f = file_reopen(file);
-    while (length > 0)
+    off_t f_length = file_length(f);
+    size_t read_bytes = f_length < length ? f_length : length;
+    size_t zero_bytes = PGSIZE - (read_bytes % PGSIZE);
+
+    ASSERT((read_bytes + zero_bytes) % PGSIZE == 0);
+	ASSERT(pg_ofs(addr) == 0);
+	ASSERT(offset % PGSIZE == 0);
+
+    while (read_bytes > 0 || zero_bytes > 0)
 	{
 		/* Do calculate how to fill this page.
 		 * We will read PAGE_length bytes from FILE
 		 * and zero the final PAGE_ZERO_BYTES bytes. */
-		size_t page_length = length < PGSIZE ? length : PGSIZE;
-		size_t page_zero_bytes = PGSIZE - page_length;
+		size_t page_read_bytes = read_bytes < PGSIZE ? read_bytes : PGSIZE;
+		size_t page_zero_bytes = PGSIZE - page_read_bytes;
+        struct segment_arg *segment_arg = (struct segment_arg*)malloc(sizeof(struct segment_arg));
+        segment_arg->file = f;
+        segment_arg->ofs = offset;
+        segment_arg->read_bytes = page_read_bytes;
+        segment_arg->zero_bytes = page_zero_bytes;
 
-
-		if (!vm_alloc_page_with_initializer(VM_FILE, addr, writable, NULL, NULL))
+		if (!vm_alloc_page_with_initializer(VM_FILE, addr, writable, lazy_load_segment, segment_arg))
 			return false;
 
 		/* Advance. */
-		length -= page_length;
+		length -= page_read_bytes;
 		addr += PGSIZE;
-        offset += page_length;
+        offset += page_read_bytes;
+        zero_bytes += page_zero_bytes;
 	}
 	return true;
 }
