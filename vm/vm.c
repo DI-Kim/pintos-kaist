@@ -140,6 +140,7 @@
 // pass tests/threads/priority-donate-chain
 // FAIL tests/vm/cow/cow-simple
 // 9 / 141
+// page-merge-stk, syn-read 가 pass와 FAIL 같이 나옴
 /* vm.c: Generic interface for virtual memory objects. */
 
 #include "threads/malloc.h"
