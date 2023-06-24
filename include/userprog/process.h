@@ -19,6 +19,7 @@ struct thread *get_child_process(int pid);
 //! project 3
 //! lazy_load_segment에서 사용할 정보 구조체, aux로 보냄
 bool lazy_load_segment(struct page *page, void *aux);
+
 struct segment_arg {
     struct file *file;
     off_t ofs;

@@ -38,6 +38,7 @@ struct page_operations;
 struct thread;
 
 #define VM_TYPE(type) ((type) & 7)
+#define VM_MAKER_1(type) ((type) & 31)
 
 /* The representation of "page".
  * This is kind of "parent class", which has four "child class"es, which are
@@ -49,6 +50,8 @@ struct page {
 	struct frame *frame;   /* Back reference for frame */
     struct hash_elem page_elem; //! key 로 va, value 로 page
     bool writable;
+    uint32_t mmap_list_addr;
+    struct list_elem mmap_elem;
 
 	/* Your implementation */
 

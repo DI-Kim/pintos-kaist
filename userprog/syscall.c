@@ -300,26 +300,28 @@ int wait(int pid) {
 
 void *mmap (void *addr, size_t length, int writable, int fd, off_t offset) {
     // mmap에서 진행할 검증 하기
-    // fd -> file
     struct file *file = process_get_file(fd);
-    if (!file)
+    if (file == NULL)
         return NULL;
-    if (length <= 0 || file_length(file))
+    if (length == 0 || file_length(file) == 0)
         return NULL;
-    if (offset % PGSIZE == 0 )
+    // if (offset % PGSIZE == 0 )
+    if (pg_round_down(offset) != offset)
         return NULL;
     if (fd == 0 || fd == 1)
         return NULL;
 
     uint64_t page_start_point = pg_round_down(addr);
-    if (addr == NULL || page_start_point % PGSIZE == 0)
+    // if (addr == NULL || page_start_point % PGSIZE == 0)
+    if (addr == NULL || page_start_point != addr)
         return NULL;
     if (is_kernel_vaddr(addr + length) || is_kernel_vaddr(addr))
         return NULL;
 
-    struct page *p = spt_find_page(&thread_current()->spt, page_start_point);
-    if (p)
+    if (spt_find_page(&thread_current()->spt, addr))
         return NULL;
+
+	//! if (!is_user_vaddr(addr - length + offset))  이걸 사용하는 이유는?
 
     return do_mmap(addr, length, writable, file, offset);
 }

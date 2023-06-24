@@ -16,6 +16,7 @@
         "process.h": "c",
         "thread.h": "c",
         "hash.h": "c",
-        "vaddr.h": "c"
+        "vaddr.h": "c",
+        "interrupt.h": "c"
     }
 }

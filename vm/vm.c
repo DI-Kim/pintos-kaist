@@ -197,7 +197,6 @@ vm_alloc_page_with_initializer (enum vm_type type, void *upage, bool writable,
 	ASSERT (VM_TYPE(type) != VM_UNINIT)
 
 	struct supplemental_page_table *spt = &thread_current ()->spt;
-
 	/* Check wheter the upage is already occupied or not. */
     // 가상 주소 upage가 속한 페이지가 spt에 있는지 확인
 	if (spt_find_page (spt, upage) == NULL) {
@@ -210,6 +209,7 @@ vm_alloc_page_with_initializer (enum vm_type type, void *upage, bool writable,
         typedef bool (*initializer) (struct page *, enum vm_type , void *);
         // initializer type 설정
         initializer which_initializer = NULL;
+        // printf("✅✅✅✅✅\n");
 
         switch (VM_TYPE(type)) {
             case VM_ANON:  
