@@ -38,7 +38,7 @@ struct page_operations;
 struct thread;
 
 #define VM_TYPE(type) ((type) & 7)
-#define VM_MAKER_1(type) ((type) & 31)
+#define VM_MARKER_1(type) ((type) & 16)
 
 /* The representation of "page".
  * This is kind of "parent class", which has four "child class"es, which are

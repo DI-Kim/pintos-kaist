@@ -50,16 +50,15 @@ file_backed_swap_out (struct page *page) {
 /* Destory the file backed page. PAGE will be freed by the caller. */
 static void
 file_backed_destroy (struct page *page) {
-	struct file_page *file_page = &page->file;
     if (pml4_is_dirty(thread_current()->pml4, page->va))
-    {
-        file_write_at(file_page->file, page->va, file_page->read_bytes, file_page->ofs);
-        pml4_set_dirty(thread_current()->pml4, page->va, 0);
-    }
-    pml4_clear_page(thread_current()->pml4, page->va);
+	{
+		file_write_at(page->file.file, page->va, page->file.read_bytes, page->file.ofs);
+		pml4_set_dirty(thread_current()->pml4, page->va, 0);
+	}
+	pml4_clear_page(thread_current()->pml4, page->va);
 }
 
-struct list *mmap_list;
+
 /* Do the mmap */
 void *
 do_mmap (void *addr, size_t length, int writable,
@@ -75,7 +74,7 @@ do_mmap (void *addr, size_t length, int writable,
     ASSERT((read_bytes + zero_bytes) % PGSIZE == 0);
 	ASSERT(pg_ofs(addr) == 0);
 	ASSERT(offset % PGSIZE == 0);
-
+    struct list *mmap_list;
     mmap_list = (struct list*)malloc(sizeof(struct list));
     list_init(mmap_list);
     
@@ -119,6 +118,7 @@ do_mmap (void *addr, size_t length, int writable,
         offset += page_read_bytes;
 
 	}
+    
 	return addr_origin;
 }
 
@@ -127,19 +127,18 @@ void
 do_munmap (void *addr) {
     struct supplemental_page_table *spt = &thread_current()->spt;
     struct page * p = spt_find_page(spt, addr);
+    struct list* mmap_list = p->mmap_list_addr;
     
     if (p == NULL)
         return NULL;
-    if (VM_MAKER_1(p->operations->type) != VM_MARKER_1)
+    // if (VM_MARKER_1(p->operations->type) != VM_MARKER_1)
+    if (!VM_MARKER_1(p->operations->type))
         return NULL;
     
     for (struct list_elem *e = list_begin(mmap_list); e != list_end(mmap_list); e = list_next(e))
 	{
-        if (p)
-            destroy(p);
-        addr += PGSIZE;
-        p = spt_find_page(spt, addr);
+        p = list_entry(e, struct page, mmap_elem);
+        destroy(p);
 	}
-        
     free(mmap_list);
 }
