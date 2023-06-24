@@ -50,12 +50,19 @@ file_backed_swap_out (struct page *page) {
 /* Destory the file backed page. PAGE will be freed by the caller. */
 static void
 file_backed_destroy (struct page *page) {
-    if (pml4_is_dirty(thread_current()->pml4, page->va))
-	{
-		file_write_at(page->file.file, page->va, page->file.read_bytes, page->file.ofs);
-		pml4_set_dirty(thread_current()->pml4, page->va, 0);
-	}
-	pml4_clear_page(thread_current()->pml4, page->va);
+    struct file_page *file_page = &page->file;
+    uint64_t pml4 = thread_current()->pml4;
+    if (pml4_is_dirty(pml4, page->va)) {
+        // BUFFER에서 FILE로 SIZE 바이트를 씁니다.
+        // 파일의 오프셋 FILE_OFS에서 시작합니다.
+        // 실제로 쓰여진 바이트 수를 반환합니다.
+        // 파일 끝에 도달하면 SIZE보다 작을 수 있습니다.
+        // (일반적으로 이 경우 파일을 확장하지만 파일 확장은 아직 구현되지 않았습니다.)
+        // 파일의 현재 위치는 영향을 받지 않습니다.
+        file_write_at(file_page->file, page->va, file_page->read_bytes, file_page->ofs);
+        pml4_set_dirty(pml4, page->va, false);
+    }
+    pml4_clear_page(pml4, page->va);
 }
 
 
@@ -69,6 +76,8 @@ do_mmap (void *addr, size_t length, int writable,
     void *addr_origin = addr;
 
     size_t read_bytes = f_length < length ? f_length : length;
+    // f_length = 파일의 바이트 수
+    // length = 읽는 바이트 수
     size_t zero_bytes = PGSIZE - (read_bytes % PGSIZE);
 
     ASSERT((read_bytes + zero_bytes) % PGSIZE == 0);

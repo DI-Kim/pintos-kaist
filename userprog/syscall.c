@@ -305,22 +305,16 @@ void *mmap (void *addr, size_t length, int writable, int fd, off_t offset) {
         return NULL;
     if (length == 0 || file_length(file) == 0)
         return NULL;
-    // if (pg_round_down(offset) != offset)
     if (offset % PGSIZE != 0 )
         return NULL;
     if (fd == 0 || fd == 1)
         return NULL;
-    uint64_t page_start_point = pg_round_down(addr);
-    // if (addr == NULL || page_start_point != addr)
     if (addr == NULL || (uint64_t)addr % PGSIZE != 0)
         return NULL;
     if (is_kernel_vaddr(addr + length) || is_kernel_vaddr(addr))
         return NULL;
-
     if (spt_find_page(&thread_current()->spt, addr))
         return NULL;
-
-	//! if (!is_user_vaddr(addr - length + offset))  이걸 사용하는 이유는?
 
     return do_mmap(addr, length, writable, file, offset);
 }
