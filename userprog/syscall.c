@@ -303,7 +303,7 @@ void *mmap (void *addr, size_t length, int writable, int fd, off_t offset) {
     struct file *file = process_get_file(fd);
     if (file == NULL)
         return NULL;
-    if (length == 0 || file_length(file) == 0)
+    if ((long)length <= 0 || file_length(file) == 0)
         return NULL;
     if (offset % PGSIZE != 0 )
         return NULL;
@@ -311,7 +311,7 @@ void *mmap (void *addr, size_t length, int writable, int fd, off_t offset) {
         return NULL;
     if (addr == NULL || (uint64_t)addr % PGSIZE != 0)
         return NULL;
-    if (is_kernel_vaddr(addr + length) || is_kernel_vaddr(addr))
+    if (is_kernel_vaddr(addr + (size_t)length) || is_kernel_vaddr(addr))
         return NULL;
     if (spt_find_page(&thread_current()->spt, addr))
         return NULL;
