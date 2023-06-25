@@ -210,7 +210,7 @@ vm_alloc_page_with_initializer (enum vm_type type, void *upage, bool writable,
         typedef bool (*initializer) (struct page *, enum vm_type , void *);
         // initializer type 설정
         initializer which_initializer = NULL;
-        // printf("✅✅✅✅✅\n");
+        
 
         switch (VM_TYPE(type)) {
             case VM_ANON:  
@@ -222,6 +222,8 @@ vm_alloc_page_with_initializer (enum vm_type type, void *upage, bool writable,
 	    }
         uninit_new(p, upage, init, type, aux, which_initializer);	
         // page를 초기화했으므로 새로 만들었던 writable을 저장 (uninit_new뒤에 modifiy)
+        if (VM_MARKER_1_CHECK(type))
+            p->mmap_origin = true;
         p->writable = writable;
 		/* TODO: Insert the page into the spt. */
         return spt_insert_page(spt, p);

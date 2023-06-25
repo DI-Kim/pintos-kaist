@@ -141,13 +141,16 @@ do_munmap (void *addr) {
     if (p == NULL)
         return NULL;
     // if (VM_MARKER_1(p->operations->type) != VM_MARKER_1)
-    if (!VM_MARKER_1(p->operations->type))
+    // if (!VM_MARKER_1_CHECK(p->operations->type))
+    //     return NULL;
+    if (!p->mmap_origin)
         return NULL;
-    
+        
     for (struct list_elem *e = list_begin(mmap_list); e != list_end(mmap_list); e = list_next(e))
 	{
         p = list_entry(e, struct page, mmap_elem);
         destroy(p);
 	}
+    
     free(mmap_list);
 }
